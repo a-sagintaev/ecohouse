@@ -72,7 +72,7 @@ function get_id_name($table)
 <head>
 	<?php header('Content-Type: charset=utf-8');?>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Home Energy Saver</title>
+<title>⁠⁠⁠Zhylyhouse</title>
 <link rel="stylesheet" type="text/css" href="css/style.css">
 <script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="js/general.js"></script>
@@ -91,24 +91,57 @@ function get_id_name($table)
 
 	<div class="container">
 
-
 		<ul class="tabs">
+
 			<li class="tab-link current" data-tab="generalInfo">Общие данные</li>
 			<li class="tab-link" data-tab="tab-2">Теплообмен</li>
 			<li class="tab-link" data-tab="tab-3">Паропроницаемость</li>
 			<li class="tab-link" data-tab="tab-4">Теплоустойчивость</li>
 			<li class="tab-link" data-tab="tab-5">Воздухопроницаемость</li>
 			<li class="tab-link" data-tab="tab-6">Теплобаланс</li>
-		<!--	<li class="tab-link" data-tab="tab-7">Экономическая эффективность</li>
-			<li class="tab-link" data-tab="tab-8">Экология</li> -->
+			<!--<li class="tab-link" data-tab="tab-7">Экономическая эффективность</li>
+			<li class="tab-link" data-tab="tab-8">Экология</li>
+			<li class="tab-link" data-tab="tab-1">О проекте</li>-->
 		</ul>
+		<div id="tab-1" class="tab-content">
+			Цель проекта
+			разработка расчетного инструмента для быстрой оценки энергоэффективного малоэтажного здания с применением необходимых расчетов согласно СН РК. <br>
 
+			Калькулятор основываются на базе расчетной таблицы, созданной на предыдущем этапе. Онлайн-калькулятор отображает и позволяет рассчитать следующее: <br>
+			Определение сопротивления паропроницанию конструкций<br>
+			Определение сопротивления воздухопроницанию конструкций<br>
+			Определение удельной теплоты на отопление<br>
+			Определение экономической целесообразности и окупаемости<br>
+			Определение количества СО2 <br>
+			Согласно СН РК. <br>
+
+			Калькулятор состоит из следующих страниц (ориентировочно, возможно скомбинируем мелкие расчеты на странице): <br>
+			1. Введение, область применения (описание калькулятора для чего нужен) <br>
+			2. Инструкция по использованию калькулятора<br>
+			3. Название, описание проекта, исходные данные <br>
+			4. Расчет 1. Определение сопротивления теплопередачи ограждающих конструкций. Расчет необходимого слоя изоляции <br>
+			5. Расчет 2. Определение сопротивления воздухопроницанию ограждающих конструкций<br>
+			6. Расчет 3. Определение сопротивления паропроницанию ограждающих конструкций<br>
+			7. Расчет 4. Определение теплоусвоения поверхности полов<br>
+			8. Расчет 5. Определение удельной потребности в полезной тепловой энергии на отопление зданий за отопительный период<br>
+			9. Энергетический паспорт здания <br>
+			10. Экономика <br>
+			11. Выбросы С02 <br>
+			12. Построение графиков <br>
+
+			Описание калькулятора: <br>
+			Область применения калькулятора: <br>
+
+		</div>
 		<div id="generalInfo" class="tab-content current">
-		
+		<!--	<div class="domik"> </div>
+			<div class="chelovek"> </div> -->
+
 		 <form id="generalInfoForm" name="generalInfoForm" method="post" action="">
 			
 			<select id="citySelect" name="citySelect">
-				<option value='null'>- Город -</option>
+				<option selected disabled>Выберете город </option>
+
 				<?php
 				$cities=get_cities();
 				foreach ($cities as $city){
@@ -176,8 +209,9 @@ function get_id_name($table)
 					<tr>
 						<td><strong>Вид наружного ограждения </strong></td>
 						<td> 
-							<select class="selectBox" style="width:400px;">
-							<?php
+							<select class="BlockTypeSelect" id="BlockTypeSelect">
+								<option selected disabled>Выберете вид наружного ограждения </option>
+								<?php
 							$block_types=get_id_name('block_types');
 								foreach ($block_types as $block_type){
 									echo "<option value=' ".$block_type['id']." '>".$block_type['name']."</option>";
@@ -190,7 +224,8 @@ function get_id_name($table)
 						<td> <strong>Конструктивное решение наружного ограждения</strong>  </td>
 						<td>
 							<div>
-							<select class="selectBox" style="width:400px;">
+							<select class="BlockConsSelect" id="BlockConsSelect">
+								<option selected disabled>Выберете конструктивное решение наружного ограждения</option>
 								<?php
 								$uniformitys=get_id_name('uniformity');
 								foreach ($uniformitys as $uniformity){
@@ -222,9 +257,9 @@ function get_id_name($table)
 			<th> D1+Dn </th>
 			<th> Y </th>
 			<th> Dw </th>
-			<th> n= </th>
+			<!--<th> n= </th>
 			<th> Rи </th>
-			<th> би </th>
+			<th> би </th> -->
 			<?php $goods=get_id_name('goods'); ?>
 			<tr>
 
@@ -240,25 +275,30 @@ function get_id_name($table)
 				<td> </td>
 				<td> </td>
 				<td> </td>
-				<td> </td>
-				<td> </td>
-				<td> </td>
+
 			</tr>
 			 <?php
 			 for ($i=1;$i<=9;$i++) {
 				 echo "<tr>";
 				 echo "<td>$i."."</td>";
 				 // materials
-				 echo "<td> <select id='BlockSelect1_$i' name='BlockSelect1_$i' style=' width:400px;'>";
+				 echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'>";
 
 						foreach ($goods as $good){
 							echo "<option value=' ".$good['id']." '>".$good['name']."</option>";
 						}
 
 				 echo "</select></td>";
-				 echo "<td><input type='text' name='mat_depth_1_$i'> </td>";
-				 echo "<td><div id='mat_dry_density_1_$i'></div></td>";
-				 echo "<td><div id='mat_cal_coef_therm_cond_1_$i'></div></td>";
+				 echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i'> </td>";
+				 echo "<td><div class='mat_dry_density_1' id='mat_dry_density_1_$i'></div></td>";
+				 echo "<td><div class='mat_cal_coef_therm_cond_1' id='mat_cal_coef_therm_cond_1_$i'></div></td>";
+				 echo "<td><div class='mat_area_1' id='mat_area_1_$i'></div></td>";
+				 echo "<td><div class='mat_cal_coef_vapor_1' id='mat_cal_coef_vapor_1_$i'></div></td>";
+				 echo "<td><div class='mat_therm_res_calc_1' id='mat_therm_res_calc_1_$i'></div></td>";
+				 echo "<td><div class='mat_d_1' id='mat_d_1_$i'></div></td>";
+				 echo "<td><div class='mat_d1dn_1' id='mat_d1dn_1_$i'></div></td>";
+				 echo "<td><div class='mat_y_1' id='mat_y_1_$i'></div></td>";
+				 echo "<td><div class='mat_dw_1' id='mat_dw_1_$i'></div></td>";
 				 echo "</tr>";
 			 }
 			?>
@@ -275,26 +315,22 @@ function get_id_name($table)
 				<td> </td>
 				<td> </td>
 				<td> </td>
-				<td> </td>
-				<td> </td>
-				<td> </td>
+
 			</tr>
 			<tr>
 				<td> </td>
 				<td> Итого толщина </td>
-				<td> 576.500</td>
+				<td> <div id="mat_summ_depth"></div></td>
 				<td> </td>
 				<td> </td>
 				<td> </td>
 				<td> Итого R </td>
-				<td> 4.761 </td>
+				<td> <div id="mat_summ_r"></div> </td>
 				<td> </td>
 				<td> </td>
 				<td> </td>
 				<td> </td>
-				<td> </td>
-				<td> </td>
-				<td> </td>
+
 			</tr>
 
 			
@@ -310,49 +346,49 @@ function get_id_name($table)
 				<th colspan="1"> Теплообмен </th>
 				<tr>
 					<td class="dataName"> Коэффициент теплоотд. внутр. пов.  aв= </td>
-					<td> </td>	
+					<td> <div id="temp_coef_heat"></div></td>
 					<td class="dataName"> Для определения толщины изоляции Rcon = </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> Коэффициент теплоотд. наруж.пов.  aн= </td>
-					<td> </td>	
+					<td> <div id="temp_coef_heap_cond"></div></td>
 					<td class="dataName"> Rусл= </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> Коэффициент теплотехн. однород.  rод.= </td>
-					<td> </td>	
+					<td> <div id="temp_ratio"></div> </td>
 					<td class="dataName"> Rпр= </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> Коэффициент полож.наруж поверхн.  n= </td>
-					<td> </td>	
+					<td> <div id="temp_n"></div></td>
 					<td class="dataName"> Ro.мин1= </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> Нормируемый  температур.перепад, oC Dtн= </td>
-					<td> </td>	
+					<td> <div id="temp_diff"></div> </td>
 					<td class="dataName"> Ro.мин2= </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> Темп. воздуха эксплутац. помещения tc= </td>
-					<td> <input type="text"> </td>	
+					<td> <input type="text" value="5"> </td>
 					<td class="dataName"> Необходимая толщина изоляции = </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> Тепловая инерция  D= </td>
-					<td> </td>	
+					<td> <div id="temp_therm_lag"></div></td>
 					<td class="dataName"> Фактическая толщина изоляции= </td>
 					<td> </td>					
 				</tr>
 				<tr>
 					<td class="dataName"> 'tповерх.= </td>
-					<td> </td>	
+					<td> <div id="temp_surface_temp"></div></td>
 					<td class="dataName"> Толщина Изоляции по формуле= </td>
 					<td> </td>					
 				</tr>				
