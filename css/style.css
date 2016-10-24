@@ -1,0 +1,102 @@
+body {
+    font-family: arial,sans-serif;
+    font-size: 13px;
+    color: #444444;
+	margin: 0;
+    padding: 0;
+    position: relative;
+    background-color: #FFFFFF;
+	height:100%;
+}
+#topHeader{
+	min-height:50px;
+}
+.container{
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 6px;
+}
+ul.tabs{
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+ul.tabs li{
+	background: none;
+	color: #222;
+	display: inline-block;
+	padding: 10px 3px;
+	cursor: pointer;
+}
+
+ul.tabs li.current{
+	background: #ededed;
+	color: #222;
+}
+
+.tab-content{
+	display: none;
+	background: #ededed;
+	padding: 15px;
+}
+
+.tab-content.current{
+	display: inherit;
+}
+#citySelect{
+	min-width:15%;
+	float:left;
+}
+#aboutCity{
+	min-height:100px;
+	min-width: 40%;
+    margin-left: 10%;
+}
+table, th, td {
+    border: 1px solid black;
+	border-collapse: collapse;
+	padding:5px;
+}
+#generalInfoForm table{
+
+	float:left;
+	margin-right:3%;
+}
+#generalInfoForm table th{
+	padding:15px;
+}
+.tableCheckBox{
+	width:20%;
+	float:right;
+	
+}
+.addBlock{
+	margin-top:20px;
+	padding:5px;
+}
+#keyValues, #graphs{
+	width:25%;
+	min-height:60px;
+}
+.blockName table{
+	min-width:20% !important;
+	float:none !important;
+	margin-bottom:20px;
+}
+.blockName td{
+	max-width:30%;
+}
+.selectBox{
+	width:200px;
+}
+.dataName{
+	font-size:10px;
+	width:35%;
+}
+input[type=text] {
+	padding:5px;
+	border:2px solid #ccc;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	width: 50px;
+}
