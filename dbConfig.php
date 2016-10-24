@@ -1,9 +1,10 @@
 <?php
 //db details
 $dbHost = 'localhost';
-$dbUsername = 'user';
-$dbPassword = 'pass';
-$dbName = 'db';
+$dbUsername = 'ecohouse';
+$dbPassword = 'MlkmZIceCASc3S';
+$dbName = 'ecohouse';
+
 
 //Connect and select the database
 $db = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
