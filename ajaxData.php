@@ -67,7 +67,8 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         $cal_coef_therm_cond=round($row['cal_coef_therm_cond_a'],2);
         if ($zone_ab == "A") {
             $area = round(0.27 * sqrt($row['dry_therm_cond'] * $dry_density * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_a']),2);
-        } else {
+        } else
+        {
             $area = round( 0.27 * sqrt($row['dry_therm_cond'] * $dry_density * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_b']),2);
         }
         $cal_coef_vapor=round($row['cal_coef_vapor'],2);
@@ -90,8 +91,9 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         }
         $therm_lag=0;
         foreach ($mat_depth as $item) {
-            $therm_lag=round($therm_lag+(($item/1000)/$area)*$cal_coef_vapor,2);
+            $therm_lag=$therm_lag+(($item/1000)/$cal_coef_therm_cond)*$area;
         }
+        $therm_lag=round($therm_lag,2);
         if(isset($_POST["city_temp_in"]) && !empty($_POST["city_temp_in"]) && isset($_POST["city_temp_out"]) && !empty($_POST["city_temp_out"])) {
             $surface_temp = $_POST["city_temp_in"] - ($_POST["city_temp_in"]-$_POST["city_temp_out"]/(1)); // add (G18*C17)
         }
@@ -126,13 +128,18 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
     }
     $summ_r=$summ_r + 0.158;
 
+    //TODO: учесть все все считаеться только для слоев изоляции
+
+    $rcon=0;
     if (count($mat_l) > 0 and count($mat_depth) > 0) {
-
-        foreach ($mat_l as $item) {
-            $rcon = $rcon + $item;
+        $min_val = min(count($mat_l), count($mat_depth));
+        for ($i = 0; $i <= $min_val; $i++) {
+            if ($mat_l[$i] != 0) {
+                $rcon = $rcon + $mat_depth[$i] / $mat_l[$i] ;
+            }
         }
+        $rcon=round($rcon/1000,2);
     }
-
 
 
     echo json_encode(
@@ -149,7 +156,8 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
             "summ" => "$summ_depth",
             "therm_lag" => "$therm_lag",
             "surface_temp" => "$surface_temp",
-            "summ_r" => "$summ_r")
+            "summ_r" => "$summ_r",
+            "rcon" => "$rcon")
     );
 }
 

@@ -1,9 +1,9 @@
 <?php
 //db details
 $dbHost = 'localhost';
-$dbUsername = 'ecohouse';
-$dbPassword = 'MlkmZIceCASc3S';
-$dbName = 'ecohouse';
+$dbUsername = 'user';
+$dbPassword = 'pass';
+$dbName = 'db';
 
 //Connect and select the database
 $db = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);

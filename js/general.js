@@ -100,6 +100,7 @@ $(document).ready(function(){
 					$('#temp_therm_lag').html(obj.therm_lag);
 					$('#temp_surface_temp').html(obj.surface_temp);
 					$('#mat_summ_r').html(obj.summ_r);
+					$('#temp_rcon').html(obj.rcon);
 
 
 

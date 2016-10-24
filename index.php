@@ -348,7 +348,7 @@ function get_id_name($table)
 					<td class="dataName"> Коэффициент теплоотд. внутр. пов.  aв= </td>
 					<td> <div id="temp_coef_heat"></div></td>
 					<td class="dataName"> Для определения толщины изоляции Rcon = </td>
-					<td> </td>					
+					<td> <div id="temp_rcon"></div> </td>
 				</tr>
 				<tr>
 					<td class="dataName"> Коэффициент теплоотд. наруж.пов.  aн= </td>
@@ -473,6 +473,112 @@ function get_id_name($table)
 				
 			</table>
 		</div>
+		<div id="tab-5" class="tab-content">
+			<table class="dataTable">
+				<th colspan="6"> Воздухонипроницаемость </th>
+				<tr>
+					<td> Вид ограждающей конструкции </td>
+					<td colspan="5"> <select> <option> Наружные стены </option> </select> </td>						
+				</tr> 
+				<tr>
+					<td> Высота здания H= </td>
+					<td> 15 </td>	
+					<td> Dp= </td>
+					<td> 38 </td>	
+					<td> Ghtp= </td>
+					<td> 0,5 </td>
+				</tr>
+				<tr>
+					<td> gh= </td>
+					<td> 14 </td>	
+					<td> Rhtp= </td>
+					<td> 76 </td>	
+					<td> Gh= </td>
+					<td> 1,5 </td>				
+				</tr>
+				<tr>
+					<td> gв= </td>
+					<td> 11 </td>	
+					<td> Ra= </td>
+					<td> 235 </td>	
+					<td> </td>
+					<td> </td>						
+				</tr>
+				<tr>
+					<td> Нормативная воздухопроницаемость </td>
+					<td colspan="5" > <select> <option> Входные двери квартиры </option> </select> </td>		
+				</tr>
+				<tr>
+					<td> Rhtp= </td>
+					<td> 1,64141 </td>	
+					<td> </td>
+					<td> </td>	
+					<td> </td>
+					<td> </td>					
+				</tr>		
+				
+			</table>
+		</div>	
+		<div id="tab-6" class="tab-content">
+			<table class="dataTable">
+				<th colspan="7"> Теплобаланс </th>
+				<tr>
+					<td colspan="2"> Данные для ввода </td>
+					<td> </td>	
+					<td> </td>
+					<td> </td>	
+					<td> </td>
+					<td> </td>						  
+				</tr> 
+				<tr>
+					<td> Размеры </td>
+					<td> прочие данные </td>	
+					<td colspan="4"> Отклонение расчетного от нормативного </td>
+					<td> -5,24214 </td>	
+				</tr>
+				<tr>
+					<td> 10 </td>
+					<td> bh = </td>	
+					<td> <select> <option> 1,13 </option> </select> </td>
+					<td colspan="3"> Коэффициент остекленности фасада здания p= </td>	
+					<td> 0,07 </td>
+				</tr>
+				<tr>
+					<td> 10 </td>
+					<td> k = </td>	
+					<td> <select> <option> 1 </option> </select> </td>
+					<td colspan="3"> Показатель компактности здания kedes = </td>	
+					<td> 0,84 </td>					
+				</tr>
+					<td> 5,92 </td>
+					<td> z = </td>	
+					<td> <select> <option> 0,94 </option> </select> </td>
+					<td></td>	
+					<td></td>	
+					<td></td>	
+					<td></td>	
+				</tr>
+				<tr>
+					<td> 1 </td>
+					<td> bv = </td>	
+					<td> 0,85 </td>
+					<td></td>	
+					<td></td>	
+					<td></td>	
+					<td></td>					
+				</tr>	
+				<tr>
+					<td> 2,1 </td>
+					<td> </td>	
+					<td> </td>
+					<td></td>	
+					<td></td>	
+					<td></td>	
+					<td></td>					
+				</tr>					
+				
+			</table>
+		</div>				
 
 	</div><!-- container -->
 

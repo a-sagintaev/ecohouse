@@ -52,7 +52,7 @@ ul.tabs li.current{
 #citySelect{
 	min-width:15%;
 	float:left;
-	margin-right:30px;
+	margin-right:18px;
 }
 #aboutCity{
 	min-height:100px;
@@ -65,9 +65,11 @@ table, th, td {
 	padding:5px;
 }
 #generalInfoForm table{
-
 	float:left;
-	margin-right:3%;
+	width:73%;
+}
+#generalBlocksForm table, #generalGoodsForm table{
+	width:100%;
 }
 #generalInfoForm table th{
 	padding:15px;
@@ -123,4 +125,7 @@ input[type=text] {
 }
 .BlockSelect{
 	width:270px;
+}
+.BlockConsSelect,.BlockTypeSelect{
+	max-width:400px;
 }
