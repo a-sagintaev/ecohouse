@@ -63,29 +63,22 @@ function get_id_name($table)
 // отлавливаем ajax-запрос
 
 
-?>
-
-
-
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html>
 <head>
+
 	<?php header('Content-Type: charset=utf-8');?>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>⁠⁠⁠Zhylyhouse</title>
-<link rel="stylesheet" type="text/css" href="css/style.css">
-<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
-<script type="text/javascript" src="js/general.js"></script>
-
-
-
-
+	<title>Zhylyhouse</title>
+	<link rel="stylesheet" type="text/css" href="/css/style.css">
+	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
+	<script type="text/javascript" src="/js/general.js"></script>
 
 </head>
+<body>
 <div id="topHeader">
 <!-- шапка -->
 </div>
-<body>
 <?php include('dbConfig.php');?>
 
 
@@ -140,7 +133,7 @@ function get_id_name($table)
 		 <form id="generalInfoForm" name="generalInfoForm" method="post" action="">
 			
 			<select id="citySelect" name="citySelect">
-				<option selected disabled>Выберете город </option>
+				<option selected value="0"> - Выберете город - </option>
 
 				<?php
 				$cities=get_cities();
@@ -209,7 +202,7 @@ function get_id_name($table)
 					<tr>
 						<td><strong>Вид наружного ограждения </strong></td>
 						<td> 
-							<select class="BlockTypeSelect" id="BlockTypeSelect">
+							<select class="BlockTypeSelect" id="BlockTypeSelect" disabled="true">
 								<option selected disabled>Выберете вид наружного ограждения </option>
 								<?php
 							$block_types=get_id_name('block_types');
@@ -224,7 +217,7 @@ function get_id_name($table)
 						<td> <strong>Конструктивное решение наружного ограждения</strong>  </td>
 						<td>
 							<div>
-							<select class="BlockConsSelect" id="BlockConsSelect">
+							<select class="BlockConsSelect" id="BlockConsSelect" disabled="true">
 								<option selected disabled>Выберете конструктивное решение наружного ограждения</option>
 								<?php
 								$uniformitys=get_id_name('uniformity');
@@ -282,7 +275,7 @@ function get_id_name($table)
 				 echo "<tr>";
 				 echo "<td>$i."."</td>";
 				 // materials
-				 echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'>";
+				 echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'  disabled=\"true\">";
 
 						foreach ($goods as $good){
 							echo "<option value=' ".$good['id']." '>".$good['name']."</option>";
@@ -586,5 +579,4 @@ function get_id_name($table)
 
 
 </body>
-
 </html>

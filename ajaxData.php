@@ -34,6 +34,7 @@ if(isset($_POST["city_id"]) && !empty($_POST["city_id"])) {
             $cold_mid_hum_month = $row['cold_mid_hum_month'];
         }
     }
+    //setcookie("city_temp_in", $city_temp_in );
 
     echo json_encode(
      array("city_temp_in" => "$city_temp_in",
@@ -50,44 +51,57 @@ if(isset($_POST["city_id"]) && !empty($_POST["city_id"])) {
 
 if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
 
-    $query = $db->query("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc FROM goods WHERE id =" . $_POST['mat_id']);
+    $query = $db->query("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id =" . $_POST['mat_id']);
     if(isset($_POST["city_zone_ab"]) && !empty($_POST["city_zone_ab"])) {
         $zone_ab = $_POST["city_zone_ab"];
     }
     // готовим данные из инпута.
     // TODO: Добавить обновление всего по изменении инпута
-    $mat_depth[]="";
-    for ($i=1;$i<=9;$i++){
-        if (isset($_POST["mat_depth_" . $i]) && !empty($_POST["mat_depth_" . $i])) {
-            $mat_depth[$i-1]=$_POST["mat_depth_" . $i];
-        }
-    }
+	
+	/* @@@@@@@@@@@@@@@@@@@@@ MAX @@@@@@@@@@@@@@@@@@@@ */
+    $mat_depth = array();
+	if(isset($_POST["mat_depth"]))
+	{
+		foreach($_POST["mat_depth"] as $i => $value)
+		{
+			$mat_depth[$i-1] = $value;
+		}
+	}
+	
+    // for ($i=1;$i<=9;$i++){
+        // if (isset($_POST["mat_depth_" . $i]) && !empty($_POST["mat_depth_" . $i])) {
+            // $mat_depth[$i-1]=$_POST["mat_depth_" . $i];
+        // }
+    // }
+	
+	/* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
+	
     while ($row = $query->fetch_assoc()) {
-        $dry_density=round($row['dry_density'],2);
-        $cal_coef_therm_cond=round($row['cal_coef_therm_cond_a'],2);
+        $dry_density=$row['dry_density'];
+        $cal_coef_therm_cond=$row['cal_coef_therm_cond_a'];
         if ($zone_ab == "A") {
-            $area = round(0.27 * sqrt($row['dry_therm_cond'] * $dry_density * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_a']),2);
+            $area = 0.27 * sqrt($row['dry_therm_cond'] * $dry_density * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_a']);
         } else
         {
-            $area = round( 0.27 * sqrt($row['dry_therm_cond'] * $dry_density * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_b']),2);
+            $area =  0.27 * sqrt($row['dry_therm_cond'] * $dry_density * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_b']);
         }
-        $cal_coef_vapor=round($row['cal_coef_vapor'],2);
-        $therm_res_calc=round($row['therm_res_calc'],2);
+        $cal_coef_vapor=$row['cal_coef_vapor'];
+        $therm_res_calc=$row['therm_res_calc'];
         if ($therm_res_calc == 0 ) {
             $therm_res_calc=round($_POST["mat_depth_cur"]/1000/$cal_coef_therm_cond,3);
         }
-        $d=round($area * $therm_res_calc,2);
-        $d1dn=round($d,2);
+        $d=$area * $therm_res_calc;
+        $d1dn=$d;
 
         if($d >= 1) {
-            $y=round($d);
+            $y=$d;
         } else{
-            $y=round(($therm_res_calc*($area^2)+8.7)/(1+$area*8.7),2);
+            $y=($therm_res_calc*($area^2)+8.7)/(1+$area*8.7);
         }
         if ($zone_ab == "A") {
-            $dw = round($row['calc_wat_in_mater_a'],2);
+            $dw = $row['calc_wat_in_mater_a'];
         } else {
-            $dw = round($row['calc_wat_in_mater_b'],2);
+            $dw = $row['calc_wat_in_mater_b'];
         }
         $therm_lag=0;
         foreach ($mat_depth as $item) {
@@ -97,19 +111,28 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         if(isset($_POST["city_temp_in"]) && !empty($_POST["city_temp_in"]) && isset($_POST["city_temp_out"]) && !empty($_POST["city_temp_out"])) {
             $surface_temp = $_POST["city_temp_in"] - ($_POST["city_temp_in"]-$_POST["city_temp_out"]/(1)); // add (G18*C17)
         }
+        $is_izol=$row['is_izol'];
 
     }
     // готовим массивы с данными со страницы
-    $mat_r[]="";
-    $mat_l[]="";
-    for ($i=1;$i<=9;$i++){
-        if (isset($_POST["mat_r_" . $i]) && !empty($_POST["mat_r_" . $i])) {
-            $mat_r[$i-1]=$_POST["mat_r_" . $i];
-        }
-        if (isset($_POST["mat_l_" . $i]) && !empty($_POST["mat_l_" . $i])) {
-            $mat_l[$i-1]=$_POST["mat_l_" . $i];
+    $mat_r[]=array();
+    $mat_l[]=array();
+
+    if(isset($_POST["mat_r"]))
+    {
+        foreach($_POST["mat_r"] as $i => $value)
+        {
+            $mat_r[$i-1] = $value;
         }
     }
+    if(isset($_POST["mat_l"]))
+    {
+        foreach($_POST["mat_l"] as $i => $value)
+        {
+            $mat_l[$i-1] = $value;
+        }
+    }
+
     // вычисления сумм элементов
     $summ_depth=0;
     foreach ($mat_depth as $item){
@@ -138,9 +161,23 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
                 $rcon = $rcon + $mat_depth[$i] / $mat_l[$i] ;
             }
         }
-        $rcon=round($rcon/1000,2);
+        $rcon=$rcon/1000;
     }
 
+    $dry_density=round($dry_density,2);
+    $cal_coef_therm_cond=round($cal_coef_therm_cond,2);
+    $area=round($area,2);
+    $cal_coef_vapor=round($cal_coef_vapor,2);
+    $therm_res_calc=round($therm_res_calc,2);
+    $d=round($d,2);
+    $d1dn=round($d1dn,2);
+    $y=round($y,2);
+    $dw=round($dw,2);
+    $summ_depth=round($summ_depth,2);
+    $therm_lag=round($therm_lag,2);
+    $surface_temp=round($surface_temp,2);
+    $summ_r=round($summ_r,2);
+    $rcon=round($rcon,2);
 
     echo json_encode(
         array(
