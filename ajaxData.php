@@ -5,19 +5,19 @@ $db->query("SET NAMES utf8");
 session_start();
 
 
-if(isset($_POST["city_id"]) && !empty($_POST["city_id"])) {
+if (isset($_POST["city_id"]) && !empty($_POST["city_id"])) {
     //Get all city data. All of this is one time collectiong, only on city change
 
-    $_SESSION['city_temp_in']="";
-    $_SESSION['vapor']="";
-    $_SESSION['calucl_tem_out_most_cold_5_day']="";
-    $_SESSION['dew_temp_point']="";
-    $_SESSION['calucl_tem_out_houses']="";
+    $_SESSION['city_temp_in'] = "";
+    $_SESSION['vapor'] = "";
+    $_SESSION['calucl_tem_out_most_cold_5_day'] = "";
+    $_SESSION['dew_temp_point'] = "";
+    $_SESSION['calucl_tem_out_houses'] = "";
 
     $query = $db->query("SELECT calucl_tem_out_most_cold_5_day,calucl_tem_out_houses,is_region,duration_heating_house,deegre_day_civil,zone_ab,cold_mid_hum_month FROM cities WHERE id =" . $_POST['city_id']);
 
     while ($row = $query->fetch_assoc()) {
-        if ($row['is_region'] == 0 ) {
+        if ($row['is_region'] == 0) {
             if ($row['calucl_tem_out_most_cold_5_day'] <= "-31") {
                 $_SESSION['city_temp_in'] = 21;
             } else {
@@ -46,27 +46,26 @@ if(isset($_POST["city_id"]) && !empty($_POST["city_id"])) {
     $calucl_tem_out_houses = round($_SESSION['calucl_tem_out_houses'], 2);
     $duration_heating_house = round($_SESSION['duration_heating_house'], 2);
     $deegre_day_civil = round($_SESSION['deegre_day_civil'], 2);
-    $zone_ab = round($_SESSION['zone_ab'], 2);
+    $zone_ab = $_SESSION['zone_ab'];
     $cold_mid_hum_month = round($_SESSION['cold_mid_hum_month'], 2);
 
-
     echo json_encode(
-     array("city_temp_in" => "$city_temp_in",
-         "vapor" => "$vapor",
-         "dew_temp_point" => "$dew_temp_point",
-         "calucl_tem_out_most_cold_5_day" => "$calucl_tem_out_most_cold_5_day",
-         "calucl_tem_out_houses" => "$calucl_tem_out_houses",
-         "duration_heating_house" => "$duration_heating_house",
-         "deegre_day_civil" => "$deegre_day_civil",
-         "zone_ab" => "$zone_ab",
-         "cold_mid_hum_month" => "$cold_mid_hum_month")
-);
+        array("city_temp_in" => "$city_temp_in",
+            "vapor" => "$vapor",
+            "dew_temp_point" => "$dew_temp_point",
+            "calucl_tem_out_most_cold_5_day" => "$calucl_tem_out_most_cold_5_day",
+            "calucl_tem_out_houses" => "$calucl_tem_out_houses",
+            "duration_heating_house" => "$duration_heating_house",
+            "deegre_day_civil" => "$deegre_day_civil",
+            "zone_ab" => "$zone_ab",
+            "cold_mid_hum_month" => "$cold_mid_hum_month")
+    );
 }
 
-if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
-    if(isset($_POST["blockID"])) {
+if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
+    if (isset($_POST["blockID"])) {
         // Works on changing something in blocks.
-        $blockIDvar=$_POST["blockID"]-1;
+        $blockIDvar = $_POST["blockID"] - 1;
 
         $query = $db->query("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id =" . $_POST['mat_id']);
 
@@ -123,8 +122,11 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
                 $_SESSION['therm_res_calc'][$blockIDvar] = $mat_depth[$blockIDvar] / 1000 / $_SESSION['cal_coef_therm_cond'][$blockIDvar];
             }
             $_SESSION['d'][$blockIDvar] = $_SESSION['area'][$blockIDvar] * $_SESSION['therm_res_calc'][$blockIDvar];
-            $_SESSION['d1dn'][$blockIDvar] = $_SESSION['d'][$blockIDvar];
-
+            if (!$blockIDvar == 0) {
+                $_SESSION['d1dn'][$blockIDvar] = $_SESSION['d'][$blockIDvar] + $_SESSION['d1dn'][$blockIDvar - 1];
+            } else {
+                $_SESSION['d1dn'][$blockIDvar] = $_SESSION['d'][$blockIDvar];
+            }
             if ($_SESSION['d'][$blockIDvar] >= 1) {
                 $_SESSION['y'][$blockIDvar] = $_SESSION['d'][$blockIDvar];
             } else {
@@ -140,9 +142,9 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
                 $_SESSION['therm_lag'] = $_SESSION['therm_lag'] + (($item / 1000) / $_SESSION['cal_coef_therm_cond'][$blockIDvar]) * $_SESSION['area'][$blockIDvar];
             }
 
-            $_SESSION['surface_temp'] = $_SESSION['city_temp_in'] - ($_SESSION['city_temp_in'] - $_SESSION['calucl_tem_out_houses'] / (1)); // add (G18*C17)
+            $_SESSION['surface_temp'] = $_SESSION['city_temp_in'] - ($_SESSION['city_temp_in'] - $_SESSION['calucl_tem_out_houses'] / ($_SESSION['city_temp_in'] * $_SESSION['coef_heat']));
 
-            $_SESSION['is_izol'][$blockIDvar]=$row['is_izol'];
+            $_SESSION['is_izol'][$blockIDvar] = $row['is_izol'];
 
         }
 
@@ -161,15 +163,12 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         //TODO: учесть все все считаеться только для слоев изоляции
 
         $rcon = 0;
-        if (count($mat_l) > 0 and count($mat_depth) > 0) {
-            $min_val = min(count($mat_l), count($mat_depth));
-            for ($i = 0; $i <= $min_val; $i++) {
-                if ($mat_l[$i] != 0) {
-                    $rcon = $rcon + $mat_depth[$i] / $mat_l[$i];
-                }
+        foreach ($_SESSION['therm_res_calc'] as $i => $item) {
+            if ($_SESSION['is_izol'][$i] == 1) {
+                $rcon = $rcon + ($mat_depth[$i] / $item);
             }
-            $rcon = $rcon / 1000;
         }
+        $rcon = $rcon / 1000;
 
         $dry_density = round($_SESSION['dry_density'][$blockIDvar], 3);
         $cal_coef_therm_cond = round($_SESSION['cal_coef_therm_cond'][$blockIDvar], 3);
@@ -181,9 +180,8 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         $y = round($_SESSION['y'][$blockIDvar], 3);
         $dw = round($_SESSION['dw'][$blockIDvar], 3);
         $therm_lag = round($_SESSION['therm_lag'], 3);
-        $surface_temp = round($surface_temp, 3);
+        $surface_temp = round($_SESSION['surface_temp'], 3);
         $summ_depth = round($summ_depth, 3);
-
         $summ_r = round($summ_r, 3);
         $rcon = round($rcon, 3);
 
@@ -207,33 +205,38 @@ if(isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
     }
 }
 
-if(isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"]))
-{
+if (isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"])) {
     $query = $db->query("SELECT coef_heat, coef_heap_cond, n, diff FROM block_types WHERE id =" . $_POST['blocktype_id']);
 
-    while ($row = $query->fetch_assoc()){
-        $coef_heat=$row['coef_heat']  ;
-        $coef_heap_cond=$row['coef_heap_cond'];
-        $n = $row['n'];
-        $diff=$row['diff'];
+    while ($row = $query->fetch_assoc()) {
+        $_SESSION['coef_heat'] = $row['coef_heat'];
+        $_SESSION['coef_heap_cond'] = $row['coef_heap_cond'];
+        $_SESSION['n'] = $row['n'];
+        $_SESSION['diff'] = $row['diff'];
     }
+
+    $coef_heat = round($_SESSION['coef_heat'], 3);
+    $coef_heap_cond = round($_SESSION['coef_heap_cond'], 3);
+    $n = round($_SESSION['n'], 3);
+    $diff = round($_SESSION['n'], 3);
+
     echo json_encode(
         array(
             "coef_heat" => "$coef_heat",
             "coef_heap_cond" => "$coef_heap_cond",
             "n" => "$n",
             "diff" => "$diff",
-            )
+        )
     );
 }
 
-if(isset($_POST["blockcons_id"]) && !empty($_POST["blockcons_id"]))
-{
+if (isset($_POST["blockcons_id"]) && !empty($_POST["blockcons_id"])) {
     $query = $db->query("SELECT ratio FROM uniformity WHERE id =" . $_POST['blockcons_id']);
 
-    while ($row = $query->fetch_assoc()){
-        $ratio=round($row['ratio'],2);
+    while ($row = $query->fetch_assoc()) {
+        $_SESSION['ratio'] = $row['ratio'];
     }
+    $ratio = round($_SESSION['ratio'], 3);
     echo json_encode(
         array(
             "ratio" => "$ratio"
