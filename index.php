@@ -79,7 +79,8 @@ function get_id_name($table)
 <div id="topHeader">
 <!-- шапка -->
 </div>
-<?php include('dbConfig.php');?>
+<?php include('dbConfig.php');
+session_start();?>
 
 
 	<div class="container">
@@ -276,13 +277,13 @@ function get_id_name($table)
 				 echo "<td>$i."."</td>";
 				 // materials
 				 echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'  disabled=\"true\">";
-
+				 		echo "<option selected value='0'>Материал не выбран</option>";
 						foreach ($goods as $good){
 							echo "<option value=' ".$good['id']." '>".$good['name']."</option>";
 						}
 
 				 echo "</select></td>";
-				 echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i'> </td>";
+				 echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i' disabled=\"true\"> </td>";
 				 echo "<td><div class='mat_dry_density_1' id='mat_dry_density_1_$i'></div></td>";
 				 echo "<td><div class='mat_cal_coef_therm_cond_1' id='mat_cal_coef_therm_cond_1_$i'></div></td>";
 				 echo "<td><div class='mat_area_1' id='mat_area_1_$i'></div></td>";
@@ -575,7 +576,7 @@ function get_id_name($table)
 
 	</div><!-- container -->
 
-
+<?php session_destroy(); ?>
 
 
 </body>

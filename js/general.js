@@ -1,5 +1,79 @@
 /*tabs*/
 
+/*console.log('$data.mat_depth[k] = ' + $data.mat_depth[k]);*/
+
+function collect_block_depth(fmatID, fblockID){
+	var $fdata = {};
+
+	$fdata.blockID=fblockID;
+	$fdata.mat_depth = new Array();
+	for(var k = 1; k < 10; k++)
+	{
+		$fdata.mat_depth[k] = $('#mat_depth_1_' + k).val();
+	}
+
+	$fdata.mat_id=fmatID;
+
+	/* @@@@@ Not needed, I hope @@@@@@
+
+	$fdata.mat_depth_cur = fselect.parents('tr').find('.mat_depth_1').val();
+	$fdata.mat_r_cur = fselect.parents('tr').find('.mat_therm_res_calc_1').val();
+	$fdata.city_zone_ab = $('#city_zone_ab').html();
+	$fdata.city_temp_in = $('#city_temp_in').html();
+	$fdata.city_temp_out = $('#city_calucl_tem_out_most_cold_5_day').html();
+	$fdata.mat_r = new Array();
+
+	for(var k = 1; k < 10; k++)
+	{
+		$fdata.mat_r[k] = $('#mat_therm_res_calc_1_' + k).html();
+	}
+	$fdata.mat_l = new Array();
+	for(var k = 1; k < 10; k++)
+	{
+		$fdata.mat_l[k] = $('#mat_cal_coef_therm_cond_1_' + k).html();
+	}
+
+	$fdata.mat_l_cur = fselect.parents('tr').find('.mat_cal_coef_therm_cond_1').val();
+	*/
+
+	return $fdata;
+
+}
+
+
+function print_block_data(fdata, fmatID, fselect) {
+	fdata=arguments[0];
+	fmatID=arguments[1];
+	fselect=arguments[2];
+
+	if(fmatID){
+		$.ajax({
+			type:'POST',
+			url:'ajaxData.php',
+			data: 	fdata,
+
+			success:function(html){
+				var obj=$.parseJSON(html);
+				fselect.parents('tr').find('.mat_dry_density_1').html(obj.dry_density);
+				fselect.parents('tr').find('.mat_cal_coef_therm_cond_1').html(obj.cal_coef_therm_cond);
+				fselect.parents('tr').find('.mat_area_1').html(obj.area);
+				fselect.parents('tr').find('.mat_cal_coef_vapor_1').html(obj.cal_coef_vapor);
+				fselect.parents('tr').find('.mat_therm_res_calc_1').html(obj.therm_res_calc);
+				fselect.parents('tr').find('.mat_d_1').html(obj.d);
+				fselect.parents('tr').find('.mat_d1dn_1').html(obj.d1dn);
+				fselect.parents('tr').find('.mat_y_1').html(obj.y);
+				fselect.parents('tr').find('.mat_dw_1').html(obj.dw);
+				fselect.parents('tr').find('.temp_coef_heat_1').html(obj.coef_heat);
+				$('#mat_summ_depth').html(obj.summ);
+				$('#temp_therm_lag').html(obj.therm_lag);
+				$('#temp_surface_temp').html(obj.surface_temp);
+				$('#mat_summ_r').html(obj.summ_r);
+				$('#temp_rcon').html(obj.rcon);
+			}
+		});
+	}
+}
+
 
 $(document).ready(function(){
 	
@@ -49,77 +123,22 @@ $(document).ready(function(){
 
 	$('.BlockSelect').on('change',function(){
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
-
 	    var select = $(this);
 		var matID = select.val();
 
-		var $data = {};
-		$data.mat_id = matID;
-		$data.city_zone_ab = $('#city_zone_ab').html();
-
-		$data.mat_depth = new Array();
-		for(var k = 1; k < 10; k++)
-		{
-			/*console.log('k = ' + k);*/
-			$data.mat_depth[k] = $('#mat_depth_1_' + k).val();
-			/*console.log('$data.mat_depth[k] = ' + $data.mat_depth[k]);*/
-		}
-		$data.mat_depth_cur = select.parents('tr').find('.mat_depth_1').val();
-
-        $data.mat_r = new Array();
-        for(var k = 1; k < 10; k++)
-        {
-            $data.mat_r[k] = $('#mat_therm_res_calc_1_' + k).html();
-        }
-		$data.mat_r_cur = select.parents('tr').find('.mat_therm_res_calc_1').val();
-
-        $data.city_temp_in = $('#city_temp_in').html();
-		$data.city_temp_out = $('#city_calucl_tem_out_most_cold_5_day').html();
-
-        $data.mat_l = new Array();
-        for(var k = 1; k < 10; k++)
-        {
-            $data.mat_l[k] = $('#mat_cal_coef_therm_cond_1_' + k).html();
-        }
-
-        $data.mat_l_cur = select.parents('tr').find('.mat_cal_coef_therm_cond_1').val();
-
-		if(matID){
-			$.ajax({
-				type:'POST',
-				url:'ajaxData.php',
-				data: 	$data,
-
-				success:function(html){
-					var obj=$.parseJSON(html);
-					select.parents('tr').find('.mat_dry_density_1').html(obj.dry_density);
-					select.parents('tr').find('.mat_cal_coef_therm_cond_1').html(obj.cal_coef_therm_cond);
-					select.parents('tr').find('.mat_area_1').html(obj.area);
-					select.parents('tr').find('.mat_cal_coef_vapor_1').html(obj.cal_coef_vapor);
-					select.parents('tr').find('.mat_therm_res_calc_1').html(obj.therm_res_calc);
-					select.parents('tr').find('.mat_d_1').html(obj.d);
-					select.parents('tr').find('.mat_d1dn_1').html(obj.d1dn);
-					select.parents('tr').find('.mat_y_1').html(obj.y);
-					select.parents('tr').find('.mat_dw_1').html(obj.dw);
-					select.parents('tr').find('.temp_coef_heat_1').html(obj.coef_heat);
-					$('#mat_summ_depth').html(obj.summ);
-					$('#temp_therm_lag').html(obj.therm_lag);
-					$('#temp_surface_temp').html(obj.surface_temp);
-					$('#mat_summ_r').html(obj.summ_r);
-					$('#temp_rcon').html(obj.rcon);
-				}
-			});
-		}
+		var $data = collect_block_depth(matID, block_1_id);
+		print_block_data($data, matID, select);
 
         k=parseInt(block_1_id)+1;
         if (k<=9)
         {
             if($(this).val() != 0)
             {
-
+				$('#mat_depth_1_'+ block_1_id).prop('disabled', false);
                 $('#BlockSelect_1_'+ k).prop('disabled', false);
             }
             else {
+				$('#mat_depth_1_'+ block_1_id).prop('disabled', true);
                 $('#BlockSelect_1_' + k).prop('disabled', true);
             }
         }
@@ -177,12 +196,24 @@ $(document).ready(function(){
 	});
 	
 	
-	// $('.mat_depth_1').on('change',function(){
-		
-	// });
-	
+	$('.mat_depth_1').on('change',function(){
+
+		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
+		var select = $('#BlockSelect_1_'+ block_1_id);
+		var matID = $('#BlockSelect_1_'+ block_1_id).val();
+
+		var $data = collect_block_depth(matID,block_1_id);
+
+		print_block_data($data, matID, select);
+	});
+	$('.mat_depth_1').on('keyup',function(){
+
+		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
+		var select = $('#BlockSelect_1_'+ block_1_id);
+		var matID = $('#BlockSelect_1_'+ block_1_id).val();
+
+		var $data = collect_block_depth(matID,block_1_id);
+
+		print_block_data($data, matID, select);
+	});
 });
-
-
-// TODO: выделить логику сбора / простановки данных в отдельные функции и вызывать на разных событиях
-// Например, $data = collectData();
