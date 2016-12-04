@@ -49,7 +49,7 @@ function print_block_data(fdata, fmatID, fselect) {
 	if(fmatID){
 		$.ajax({
 			type:'POST',
-			url:'ajaxData.php',
+			url:'/',
 			data: 	fdata,
 
 			success:function(html){
@@ -74,6 +74,27 @@ function print_block_data(fdata, fmatID, fselect) {
 	}
 }
 
+function getCityData(cityID)
+{
+	$.ajax({
+		type:'POST',
+		url:'/',
+		data:'city_id='+cityID,
+		success:function(html){
+			var obj=$.parseJSON(html);
+			$('#city_calucl_tem_out_houses').html(obj.calucl_tem_out_houses);
+			$('#city_temp_in').html(obj.city_temp_in);
+			$('#city_vapor_in').html(obj.vapor);
+			$('#city_dew_temp_point').html(obj.dew_temp_point);
+			$('#city_calucl_tem_out_most_cold_5_day').html(obj.calucl_tem_out_most_cold_5_day);
+			$('#city_duration_heating_house').html(obj.duration_heating_house);
+			$('#city_deegre_day_civil').html(obj.deegre_day_civil);
+			$('#city_zone_ab').html(obj.zone_ab);
+			$('#city_cold_mid_hum_month').html(obj.cold_mid_hum_month);
+		}
+	});
+}
+
 
 $(document).ready(function(){
 	
@@ -86,40 +107,27 @@ $(document).ready(function(){
 		$(this).addClass('current');
 		$("#"+tab_id).addClass('current');
 	});
-	
+
+	// city data
 	$('#citySelect').on('change',function(){
 		var cityID = $(this).val();
 		if(cityID){
-			$.ajax({
-				type:'POST',
-				url:'ajaxData.php',
-				data:'city_id='+cityID,
-				success:function(html){
-					var obj=$.parseJSON(html);
-					$('#city_calucl_tem_out_houses').html(obj.calucl_tem_out_houses);
-					$('#city_temp_in').html(obj.city_temp_in);
-					$('#city_vapor_in').html(obj.vapor);
-					$('#city_dew_temp_point').html(obj.dew_temp_point);
-					$('#city_calucl_tem_out_most_cold_5_day').html(obj.calucl_tem_out_most_cold_5_day);
-					$('#city_duration_heating_house').html(obj.duration_heating_house);
-					$('#city_deegre_day_civil').html(obj.deegre_day_civil);
-					$('#city_zone_ab').html(obj.zone_ab);
-					$('#city_cold_mid_hum_month').html(obj.cold_mid_hum_month);
-
-				}
-			});
+			getCityData(cityID);
+			if(cityID != 0)
+			{
+				$('#BlockTypeSelect').prop('disabled', false);
+			}
+			else
+			{
+				$('#BlockTypeSelect').prop('disabled', true);
+			}
 		}
-		
-		if($(this).val() != 0)
-		{
-			$('#BlockTypeSelect').prop('disabled', false);
-		}
-		else
-		{
-			$('#BlockTypeSelect').prop('disabled', true);
-		}
-		
 	});
+	if($('#citySelect').val() != 0)
+	{
+		getCityData($('#citySelect').val());
+	}
+
 
 	$('.BlockSelect').on('change',function(){
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
@@ -149,7 +157,7 @@ $(document).ready(function(){
 		if(BlockTypeID){
 			$.ajax({
 				type:'POST',
-				url:'ajaxData.php',
+				url:'/',
 				data:'blocktype_id='+BlockTypeID,
 				success:function(html){
 					var obj=$.parseJSON(html);
@@ -177,7 +185,7 @@ $(document).ready(function(){
 		if(BlockConsID){
 			$.ajax({
 				type:'POST',
-				url:'ajaxData.php',
+				url:'/',
 				data:'blockcons_id='+BlockConsID,
 				success:function(html){
 					var obj=$.parseJSON(html);

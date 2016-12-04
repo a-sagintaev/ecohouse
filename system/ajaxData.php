@@ -1,65 +1,67 @@
 <?php
-//Include database configuration file
-include('dbConfig.php');
-$db->query("SET NAMES utf8");
-session_start();
+// 01. GENERATING CITY DATA
 
+// проверяем есть ли $_POST
+if (isset($_POST["city_id"]) && !empty($_POST["city_id"]))
+{
+    // задаем переменную текущего запроса
+    $city_id = $_POST["city_id"];
 
-if (isset($_POST["city_id"]) && !empty($_POST["city_id"])) {
-    //Get all city data. All of this is one time collectiong, only on city change
+    // создаем или перезаписываем сессию
+    $_SESSION['city_id'] = $city_id;
+}
 
-    $_SESSION['city_temp_in'] = "";
-    $_SESSION['vapor'] = "";
-    $_SESSION['calucl_tem_out_most_cold_5_day'] = "";
-    $_SESSION['dew_temp_point'] = "";
-    $_SESSION['calucl_tem_out_houses'] = "";
+// поста нет, но есть сессия, собираем данные
+elseif(isset($_SESSION['city_id'])  && !empty($_SESSION['city_id']))
+{
+    $city_id = $_SESSION['city_id'];
+}
 
-    $query = $db->query("SELECT calucl_tem_out_most_cold_5_day,calucl_tem_out_houses,is_region,duration_heating_house,deegre_day_civil,zone_ab,cold_mid_hum_month FROM cities WHERE id =" . $_POST['city_id']);
+if(isset($city_id))
+{
+    // экранируем запрос
+    $city_id = addslashes($city_id);
+    $arCitiesData = $db->getArray("SELECT * FROM cities WHERE id = '".$city_id."'");
 
-    while ($row = $query->fetch_assoc()) {
-        if ($row['is_region'] == 0) {
-            if ($row['calucl_tem_out_most_cold_5_day'] <= "-31") {
-                $_SESSION['city_temp_in'] = 21;
+    if(!empty($arCitiesData))
+    {
+        $arCity = current($arCitiesData);
+        $arCityData = array();
+
+        if ($arCity['is_region'] == 0) {
+            if ($arCity['calucl_tem_out_most_cold_5_day'] <= "-31") {
+                $arCityData['city_temp_in'] = 21;
             } else {
-                $_SESSION['city_temp_in'] = 20;
+                $arCityData['city_temp_in'] = 20;
             }
-            $_SESSION['vapor'] = 55;
-            $_SESSION['calucl_tem_out_most_cold_5_day'] = $row['calucl_tem_out_most_cold_5_day'];
-            if ($row['calucl_tem_out_most_cold_5_day'] <= "-31") {
-                $_SESSION['dew_temp_point'] = 11.6;
+            $arCityData['vapor'] = 55;
+            $arCityData['calucl_tem_out_most_cold_5_day'] = $arCity['calucl_tem_out_most_cold_5_day'];
+            if ($arCity['calucl_tem_out_most_cold_5_day'] <= "-31") {
+                $arCityData['dew_temp_point'] = 11.6;
             } else {
-                $_SESSION['dew_temp_point'] = 10.7;
+                $arCityData['dew_temp_point'] = 10.7;
             }
-            $_SESSION['calucl_tem_out_houses'] = $row['calucl_tem_out_houses'];
-            $_SESSION['duration_heating_house'] = $row['duration_heating_house'];
-            $_SESSION['deegre_day_civil'] = $row['deegre_day_civil'];
-            $_SESSION['zone_ab'] = $row['zone_ab'];
-            $_SESSION['cold_mid_hum_month'] = $row['cold_mid_hum_month'];
+            $arCityData['calucl_tem_out_houses'] = $arCity['calucl_tem_out_houses'];
+            $arCityData['duration_heating_house'] = $arCity['duration_heating_house'];
+            $arCityData['deegre_day_civil'] = $arCity['deegre_day_civil'];
+            $arCityData['zone_ab'] = $arCity['zone_ab'];
+            $arCityData['cold_mid_hum_month'] = $arCity['cold_mid_hum_month'];
+
+            // don't know if its right, but preparing data for json
+//            $arCityData['city_temp_in'] = round($arCityData['city_temp_in'], 2);
+//            $arCityData['vapor'] = round($arCityData['vapor'], 2);
+//            $arCityData['dew_temp_point'] = round($arCityData['dew_temp_point'], 2);
+//            $arCityData['calucl_tem_out_most_cold_5_day'] = round($arCityData['calucl_tem_out_most_cold_5_day'], 2);
+//            $arCityData['calucl_tem_out_houses'] = round($arCityData['calucl_tem_out_houses'], 2);
+//            $arCityData['duration_heating_house'] = round($arCityData['duration_heating_house'], 2);
+//            $arCityData['deegre_day_civil'] = round($arCityData['deegre_day_civil'], 2);
+//            $arCityData['cold_mid_hum_month'] = round($arCityData['cold_mid_hum_month'], 2);
+
+            // по идее это условие нужно убирать и возвращать всегда один объект со всемиданными
+            if(isset($_POST["city_id"]))
+                response_json($arCityData);
         }
     }
-
-    // don't know if its right, but preparing data for json
-    $city_temp_in = round($_SESSION['city_temp_in'], 2);
-    $vapor = round($_SESSION['vapor'], 2);
-    $dew_temp_point = round($_SESSION['dew_temp_point'], 2);
-    $calucl_tem_out_most_cold_5_day = round($_SESSION['calucl_tem_out_most_cold_5_day'], 2);
-    $calucl_tem_out_houses = round($_SESSION['calucl_tem_out_houses'], 2);
-    $duration_heating_house = round($_SESSION['duration_heating_house'], 2);
-    $deegre_day_civil = round($_SESSION['deegre_day_civil'], 2);
-    $zone_ab = $_SESSION['zone_ab'];
-    $cold_mid_hum_month = round($_SESSION['cold_mid_hum_month'], 2);
-
-    echo json_encode(
-        array("city_temp_in" => "$city_temp_in",
-            "vapor" => "$vapor",
-            "dew_temp_point" => "$dew_temp_point",
-            "calucl_tem_out_most_cold_5_day" => "$calucl_tem_out_most_cold_5_day",
-            "calucl_tem_out_houses" => "$calucl_tem_out_houses",
-            "duration_heating_house" => "$duration_heating_house",
-            "deegre_day_civil" => "$deegre_day_civil",
-            "zone_ab" => "$zone_ab",
-            "cold_mid_hum_month" => "$cold_mid_hum_month")
-    );
 }
 
 if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
@@ -67,7 +69,6 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         // Works on changing something in blocks.
         $blockIDvar = $_POST["blockID"] - 1;
 
-        $query = $db->query("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id =" . $_POST['mat_id']);
 
         $mat_depth = array();
         if (isset($_POST["mat_depth"])) {
@@ -107,8 +108,9 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
             $_SESSION['is_izol'] = array();
         }
 
+        $currentArray = $db->getArray("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id =" . $_POST['mat_id']);
 
-        while ($row = $query->fetch_assoc()) {
+        foreach ($currentArray as $row) {
             $_SESSION['dry_density'][$blockIDvar] = $row['dry_density'];
             $_SESSION['cal_coef_therm_cond'][$blockIDvar] = $row['cal_coef_therm_cond_a'];
             if ($_SESSION['zone_ab'] == "A") {
@@ -142,7 +144,7 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
                 $_SESSION['therm_lag'] = $_SESSION['therm_lag'] + (($item / 1000) / $_SESSION['cal_coef_therm_cond'][$blockIDvar]) * $_SESSION['area'][$blockIDvar];
             }
 
-            $_SESSION['surface_temp'] = $_SESSION['city_temp_in'] - ($_SESSION['city_temp_in'] - $_SESSION['calucl_tem_out_houses'] / ($_SESSION['city_temp_in'] * $_SESSION['coef_heat']));
+            $_SESSION['surface_temp'] = $arCityData['city_temp_in'] - ($arCityData['city_temp_in'] - $arCityData['calucl_tem_out_houses'] / ($arCityData['city_temp_in'] * $_SESSION['coef_heat']));
 
             $_SESSION['is_izol'][$blockIDvar] = $row['is_izol'];
 
@@ -185,7 +187,7 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
         $summ_r = round($summ_r, 3);
         $rcon = round($rcon, 3);
 
-        echo json_encode(
+        response_json(
             array(
                 "dry_density" => "$dry_density",
                 "cal_coef_therm_cond" => "$cal_coef_therm_cond",
@@ -200,15 +202,16 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
                 "therm_lag" => "$therm_lag",
                 "surface_temp" => "$surface_temp",
                 "summ_r" => "$summ_r",
-                "rcon" => "$rcon")
+                "rcon" => "$rcon"
+            )
         );
     }
 }
 
 if (isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"])) {
-    $query = $db->query("SELECT coef_heat, coef_heap_cond, n, diff FROM block_types WHERE id =" . $_POST['blocktype_id']);
+    $currentArray = $db->getArray("SELECT coef_heat, coef_heap_cond, n, diff FROM block_types WHERE id =" . $_POST['blocktype_id']);
 
-    while ($row = $query->fetch_assoc()) {
+    foreach ($currentArray as $row) {
         $_SESSION['coef_heat'] = $row['coef_heat'];
         $_SESSION['coef_heap_cond'] = $row['coef_heap_cond'];
         $_SESSION['n'] = $row['n'];
@@ -220,7 +223,7 @@ if (isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"])) {
     $n = round($_SESSION['n'], 3);
     $diff = round($_SESSION['n'], 3);
 
-    echo json_encode(
+    response_json(
         array(
             "coef_heat" => "$coef_heat",
             "coef_heap_cond" => "$coef_heap_cond",
@@ -231,13 +234,14 @@ if (isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"])) {
 }
 
 if (isset($_POST["blockcons_id"]) && !empty($_POST["blockcons_id"])) {
-    $query = $db->query("SELECT ratio FROM uniformity WHERE id =" . $_POST['blockcons_id']);
+    $currentArray = $db->getArray("SELECT ratio FROM uniformity WHERE id =" . $_POST['blockcons_id']);
 
-    while ($row = $query->fetch_assoc()) {
+    foreach ($currentArray as $row) {
         $_SESSION['ratio'] = $row['ratio'];
     }
     $ratio = round($_SESSION['ratio'], 3);
-    echo json_encode(
+
+    response_json(
         array(
             "ratio" => "$ratio"
         )
