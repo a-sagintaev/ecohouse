@@ -41,210 +41,248 @@ if(isset($city_id))
             } else {
                 $arCityData['dew_temp_point'] = 10.7;
             }
+
             $arCityData['calucl_tem_out_houses'] = $arCity['calucl_tem_out_houses'];
             $arCityData['duration_heating_house'] = $arCity['duration_heating_house'];
-            $arCityData['deegre_day_civil'] = $arCity['deegre_day_civil'];
+            $arCityData['deegre_day_houses'] = $arCity['deegre_day_houses'];
             $arCityData['zone_ab'] = $arCity['zone_ab'];
             $arCityData['cold_mid_hum_month'] = $arCity['cold_mid_hum_month'];
 
-            // don't know if its right, but preparing data for json
-//            $arCityData['city_temp_in'] = round($arCityData['city_temp_in'], 2);
-//            $arCityData['vapor'] = round($arCityData['vapor'], 2);
-//            $arCityData['dew_temp_point'] = round($arCityData['dew_temp_point'], 2);
-//            $arCityData['calucl_tem_out_most_cold_5_day'] = round($arCityData['calucl_tem_out_most_cold_5_day'], 2);
-//            $arCityData['calucl_tem_out_houses'] = round($arCityData['calucl_tem_out_houses'], 2);
-//            $arCityData['duration_heating_house'] = round($arCityData['duration_heating_house'], 2);
-//            $arCityData['deegre_day_civil'] = round($arCityData['deegre_day_civil'], 2);
-//            $arCityData['cold_mid_hum_month'] = round($arCityData['cold_mid_hum_month'], 2);
-
-            // по идее это условие нужно убирать и возвращать всегда один объект со всемиданными
             if(isset($_POST["city_id"]))
                 response_json($arCityData);
         }
     }
 }
 
-if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"])) {
-    if (isset($_POST["blockID"])) {
-        // Works on changing something in blocks.
-        $blockIDvar = $_POST["blockID"] - 1;
+if (isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"]))
+{
+    // задаем переменную текущего запроса
+    $blocktype_id = $_POST["blocktype_id"];
+
+    // создаем или перезаписываем сессию
+    $_SESSION['blocktype_id'] = $blocktype_id;
+}
+
+// поста нет, но есть сессия, собираем данные
+elseif(isset($_SESSION['blocktype_id'])  && !empty($_SESSION['blocktype_id']))
+{
+    $blocktype_id = $_SESSION['blocktype_id'];
+}
+
+if (isset($blocktype_id)) {
+    $blocktype_id=addslashes($blocktype_id);
+    $arBlockTypeData = $db->getArray("SELECT coef_heat, coef_heap_cond, n, diff FROM block_types WHERE id ='".$blocktype_id."'");
+
+    if (!empty($arBlockTypeData)) {
+        $arBlockType = current($arBlockTypeData);
+        $arBlockTypeData = array();
+
+        $arBlockTypeData['coef_heat'] = $arBlockType['coef_heat'];
+        $arBlockTypeData['coef_heap_cond'] = $arBlockType['coef_heap_cond'];
+        $arBlockTypeData['n'] = $arBlockType['n'];
+        $arBlockTypeData['diff'] = $arBlockType['diff'];
+
+        $arBlockTypeData['coef_heat'] = round($arBlockTypeData['coef_heat'], 3);
+        $arBlockTypeData['coef_heap_cond'] = round($arBlockTypeData['coef_heap_cond'], 3);
+        $arBlockTypeData['n'] = round($arBlockTypeData['n'], 3);
+        $arBlockTypeData['n'] = round($arBlockTypeData['n'], 3);
+    }
+
+    if(isset($_POST["blocktype_id"]))
+        response_json($arBlockTypeData);
+}
 
 
-        $mat_depth = array();
-        if (isset($_POST["mat_depth"])) {
-            foreach ($_POST["mat_depth"] as $i => $value) {
-                $mat_depth[$i - 1] = $value;
-            }
-        }
 
-        if (!isset($_SESSION['dry_density'])) {
-            $_SESSION['dry_density'] = array();
-        }
-        if (!isset($_SESSION['cal_coef_therm_cond'])) {
-            $_SESSION['cal_coef_therm_cond'] = array();
-        }
-        if (!isset($_SESSION['area'])) {
-            $_SESSION['area'] = array();
-        }
-        if (!isset($_SESSION['cal_coef_vapor'])) {
-            $_SESSION['cal_coef_vapor'] = array();
-        }
-        if (!isset($_SESSION['therm_res_calc'])) {
-            $_SESSION['therm_res_calc'] = array();
-        }
-        if (!isset($_SESSION['d'])) {
-            $_SESSION['d'] = array();
-        }
-        if (!isset($_SESSION['d1dn'])) {
-            $_SESSION['d1dn'] = array();
-        }
-        if (!isset($_SESSION['y'])) {
-            $_SESSION['y'] = array();
-        }
-        if (!isset($_SESSION['dw'])) {
-            $_SESSION['dw'] = array();
-        }
-        if (!isset($_SESSION['is_izol'])) {
-            $_SESSION['is_izol'] = array();
-        }
+if (isset($_POST["blockcons_id"]) && !empty($_POST["blockcons_id"]))
+{
+    // задаем переменную текущего запроса
+    $blockcons_id = $_POST["blockcons_id"];
 
-        $currentArray = $db->getArray("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id =" . $_POST['mat_id']);
+    // создаем или перезаписываем сессию
+    $_SESSION['blockcons_id'] = $blockcons_id;
+}
 
-        foreach ($currentArray as $row) {
-            $_SESSION['dry_density'][$blockIDvar] = $row['dry_density'];
-            $_SESSION['cal_coef_therm_cond'][$blockIDvar] = $row['cal_coef_therm_cond_a'];
-            if ($_SESSION['zone_ab'] == "A") {
-                $_SESSION['area'][$blockIDvar] = 0.27 * sqrt($row['dry_therm_cond'] * $_SESSION['dry_density'][$blockIDvar] * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_a']);
-            } else {
-                $_SESSION['area'][$blockIDvar] = 0.27 * sqrt($row['dry_therm_cond'] * $_SESSION['dry_density'][$blockIDvar] * $row['dry_spec_heat'] - 0.0419 * $row['calc_wat_in_mater_b']);
-            }
-            $_SESSION['cal_coef_vapor'][$blockIDvar] = $row['cal_coef_vapor'];
-            $_SESSION['therm_res_calc'][$blockIDvar] = $row['therm_res_calc'];
-            if ($_SESSION['therm_res_calc'][$blockIDvar] == 0) {
-                $_SESSION['therm_res_calc'][$blockIDvar] = $mat_depth[$blockIDvar] / 1000 / $_SESSION['cal_coef_therm_cond'][$blockIDvar];
-            }
-            $_SESSION['d'][$blockIDvar] = $_SESSION['area'][$blockIDvar] * $_SESSION['therm_res_calc'][$blockIDvar];
-            if (!$blockIDvar == 0) {
-                $_SESSION['d1dn'][$blockIDvar] = $_SESSION['d'][$blockIDvar] + $_SESSION['d1dn'][$blockIDvar - 1];
-            } else {
-                $_SESSION['d1dn'][$blockIDvar] = $_SESSION['d'][$blockIDvar];
-            }
-            if ($_SESSION['d'][$blockIDvar] >= 1) {
-                $_SESSION['y'][$blockIDvar] = $_SESSION['d'][$blockIDvar];
-            } else {
-                $_SESSION['y'][$blockIDvar] = ($_SESSION['therm_res_calc'][$blockIDvar] * ($_SESSION['area'][$blockIDvar] ^ 2) + 8.7) / (1 + $_SESSION['area'][$blockIDvar] * 8.7);
-            }
-            if ($_SESSION['zone_ab'] == "A") {
-                $_SESSION['dw'][$blockIDvar] = $row['calc_wat_in_mater_a'];
-            } else {
-                $_SESSION['dw'][$blockIDvar] = $row['calc_wat_in_mater_b'];
-            }
-            $_SESSION['therm_lag'] = 0;
-            foreach ($mat_depth as $item) {
-                $_SESSION['therm_lag'] = $_SESSION['therm_lag'] + (($item / 1000) / $_SESSION['cal_coef_therm_cond'][$blockIDvar]) * $_SESSION['area'][$blockIDvar];
-            }
+// поста нет, но есть сессия, собираем данные
+elseif(isset($_SESSION['blockcons_id'])  && !empty($_SESSION['blockcons_id']))
+{
+    $blockcons_id = $_SESSION['blockcons_id'];
+}
 
-            $_SESSION['surface_temp'] = $arCityData['city_temp_in'] - ($arCityData['city_temp_in'] - $arCityData['calucl_tem_out_houses'] / ($arCityData['city_temp_in'] * $_SESSION['coef_heat']));
+if (isset($blockcons_id)) {
+    $blockcons_id=addslashes($blockcons_id);
+    $arBlockConsData = $db->getArray("SELECT ratio FROM uniformity WHERE id ='".$blockcons_id."'");
 
-            $_SESSION['is_izol'][$blockIDvar] = $row['is_izol'];
+    if (!empty($arBlockConsData)) {
+        $arBlockCons = current($arBlockConsData);
+        $arBlockConsData = array();
 
+        $arBlockConsData['ratio'] = $arBlockCons['ratio'];
+
+        $arBlockConsData['ratio'] = round($arBlockConsData['ratio'], 3);
+        if (isset($_POST["blockcons_id"])) {
+            response_json($arBlockConsData);
         }
-
-        // вычисления сумм элементов
-        $summ_depth = 0;
-        foreach ($mat_depth as $item) {
-            $summ_depth = $summ_depth + $item;
-        }
-
-        $summ_r = 0;
-        foreach ($_SESSION['therm_res_calc'] as $item) {
-            $summ_r = $summ_r + $item;
-        }
-        $summ_r = $summ_r + 0.158;
-
-        //TODO: учесть все все считаеться только для слоев изоляции
-
-        $rcon = 0;
-        foreach ($_SESSION['therm_res_calc'] as $i => $item) {
-            if ($_SESSION['is_izol'][$i] == 1) {
-                $rcon = $rcon + ($mat_depth[$i] / $item);
-            }
-        }
-        $rcon = $rcon / 1000;
-
-        $dry_density = round($_SESSION['dry_density'][$blockIDvar], 3);
-        $cal_coef_therm_cond = round($_SESSION['cal_coef_therm_cond'][$blockIDvar], 3);
-        $area = round($_SESSION['area'][$blockIDvar], 3);
-        $cal_coef_vapor = round($_SESSION['cal_coef_vapor'][$blockIDvar], 3);
-        $therm_res_calc = round($_SESSION['therm_res_calc'][$blockIDvar], 3);
-        $d = round($_SESSION['d'][$blockIDvar], 3);
-        $d1dn = round($_SESSION['d1dn'][$blockIDvar], 3);
-        $y = round($_SESSION['y'][$blockIDvar], 3);
-        $dw = round($_SESSION['dw'][$blockIDvar], 3);
-        $therm_lag = round($_SESSION['therm_lag'], 3);
-        $surface_temp = round($_SESSION['surface_temp'], 3);
-        $summ_depth = round($summ_depth, 3);
-        $summ_r = round($summ_r, 3);
-        $rcon = round($rcon, 3);
-
-        response_json(
-            array(
-                "dry_density" => "$dry_density",
-                "cal_coef_therm_cond" => "$cal_coef_therm_cond",
-                "area" => "$area",
-                "cal_coef_vapor" => "$cal_coef_vapor",
-                "therm_res_calc" => "$therm_res_calc",
-                "d" => "$d",
-                "d1dn" => "$d1dn",
-                "y" => "$y",
-                "dw" => "$dw",
-                "summ" => "$summ_depth",
-                "therm_lag" => "$therm_lag",
-                "surface_temp" => "$surface_temp",
-                "summ_r" => "$summ_r",
-                "rcon" => "$rcon"
-            )
-        );
     }
 }
 
-if (isset($_POST["blocktype_id"]) && !empty($_POST["blocktype_id"])) {
-    $currentArray = $db->getArray("SELECT coef_heat, coef_heap_cond, n, diff FROM block_types WHERE id =" . $_POST['blocktype_id']);
 
-    foreach ($currentArray as $row) {
-        $_SESSION['coef_heat'] = $row['coef_heat'];
-        $_SESSION['coef_heap_cond'] = $row['coef_heap_cond'];
-        $_SESSION['n'] = $row['n'];
-        $_SESSION['diff'] = $row['diff'];
-    }
+if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_id"]) && !empty($_POST["block_id"])) {
+    // задаем переменную текущего запроса
+    $mat_id = $_POST["mat_id"];
+    $block_id = $_POST["block_id"];
 
-    $coef_heat = round($_SESSION['coef_heat'], 3);
-    $coef_heap_cond = round($_SESSION['coef_heap_cond'], 3);
-    $n = round($_SESSION['n'], 3);
-    $diff = round($_SESSION['n'], 3);
-
-    response_json(
-        array(
-            "coef_heat" => "$coef_heat",
-            "coef_heap_cond" => "$coef_heap_cond",
-            "n" => "$n",
-            "diff" => "$diff",
-        )
-    );
+    // создаем или перезаписываем сессию
+    $_SESSION['mat_id'][$block_id] = $mat_id;
+} elseif (isset($_SESSION['mat_id'][$_POST["block_id"]]))
+{
+    $mat_id = $_SESSION['mat_id'][$_POST["block_id"]];
+    $block_id = $_POST["block_id"];
 }
 
-if (isset($_POST["blockcons_id"]) && !empty($_POST["blockcons_id"])) {
-    $currentArray = $db->getArray("SELECT ratio FROM uniformity WHERE id =" . $_POST['blockcons_id']);
 
-    foreach ($currentArray as $row) {
-        $_SESSION['ratio'] = $row['ratio'];
+if (isset($mat_id) && isset($block_id)) {
+
+    // Works on changing something in blocks.
+    $block_id_var = $block_id - 1;
+    $mat_id = addslashes($mat_id);
+
+    $mat_depth = array();
+    if (isset($_POST["mat_depth"])) {
+        foreach ($_POST["mat_depth"] as $i => $value) {
+            $mat_depth[$i]  = $value;
+        }
     }
-    $ratio = round($_SESSION['ratio'], 3);
+    $arBlockData = $db->getArray("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id ='" . $mat_id . "'");
 
-    response_json(
-        array(
-            "ratio" => "$ratio"
-        )
-    );
+
+    /*      if (!isset($_SESSION['dry_density'])) {
+              $_SESSION['dry_density'] = array();
+          }
+          if (!isset($_SESSION['cal_coef_therm_cond'])) {
+              $_SESSION['cal_coef_therm_cond'] = array();
+          }
+          if (!isset($_SESSION['area'])) {
+              $_SESSION['area'] = array();
+          }
+          if (!isset($_SESSION['cal_coef_vapor'])) {
+              $_SESSION['cal_coef_vapor'] = array();
+          }
+          if (!isset($_SESSION['therm_res_calc'])) {
+              $_SESSION['therm_res_calc'] = array();
+          }
+          if (!isset($_SESSION['d'])) {
+              $_SESSION['d'] = array();
+          }
+          if (!isset($_SESSION['d1dn'])) {
+              $_SESSION['d1dn'] = array();
+          }
+          if (!isset($_SESSION['y'])) {
+              $_SESSION['y'] = array();
+          }
+          if (!isset($_SESSION['dw'])) {
+              $_SESSION['dw'] = array();
+          }
+          if (!isset($_SESSION['is_izol'])) {
+              $_SESSION['is_izol'] = array();
+          }
+  */
+
+    if (!empty($arBlockData)) {
+        $arBlock = current($arBlockData);
+        $arBlockData = array();
+
+        $arBlockData['dry_density'] = $arBlock['dry_density'];
+        $arBlockData['cal_coef_therm_cond'] = $arBlock['cal_coef_therm_cond_a'];
+        if($arBlock['cal_coef_therm_cond_a'] <> null) {
+            $_SESSION['cal_coef_therm_cond'][$block_id_var] = $arBlockData['cal_coef_therm_cond'];
+        } else {
+            $_SESSION['cal_coef_therm_cond'][$block_id_var]=1;
+        }
+        if ($arCityData['zone_ab'] == "A") {
+            $arBlockData['area'] = 0.27 * sqrt($arBlock['dry_therm_cond'] * $arBlockData['dry_density'] * ($arBlock['dry_spec_heat'] - 0.0419 * $arBlock['calc_wat_in_mater_a']));
+        } else {
+            $arBlockData['area'] = 0.27 * sqrt($arBlock['dry_therm_cond'] * $arBlockData['dry_density'] * ($arBlock['dry_spec_heat'] - 0.0419 * $arBlock['calc_wat_in_mater_b']));
+        }
+        $_SESSION['area'][$block_id_var]=$arBlockData['area'];
+        $arBlockData['cal_coef_vapor'] = $arBlock['cal_coef_vapor'];
+        $arBlockData['therm_res_calc'] = $arBlock['therm_res_calc'];
+
+        if ($arBlockData['therm_res_calc'] == 0) {
+            $arBlockData['therm_res_calc'] = $mat_depth[$block_id_var] / 1000 / $arBlockData['cal_coef_therm_cond'];
+        }
+        $_SESSION['therm_res_calc'][$block_id_var]=$arBlockData['therm_res_calc'];
+        $arBlockData['d'] = $arBlockData['area'] * $arBlockData['therm_res_calc'];
+        if (!$block_id_var == 0) {
+            $arBlockData['d1dn'] = $arBlockData['d'] + $_SESSION['d1dn'][$block_id_var - 1]; // check
+        } else {
+            $arBlockData['d1dn'] = $arBlockData['d'];
+        }
+        $_SESSION['d1dn'][$block_id_var]=$arBlockData['d1dn'];
+        if ($arBlockData['d'] >= 1) {
+            $arBlockData['y'] = $arBlockData['area'];
+        } else {
+            $arBlockData['y'] = ($arBlockData['therm_res_calc'] * ($arBlockData['area']*$arBlockData['area']) + 8.7) / (1 + $arBlockData['therm_res_calc'] * 8.7);
+        }
+        if ($arCityData['zone_ab'] == "A") {
+            $arBlockData['dw'] = $arBlock['calc_wat_in_mater_a'];
+        } else {
+            $arBlockData['dw'] = $arBlock['calc_wat_in_mater_b'];
+        }
+        $arBlockData['therm_lag'] = 0;
+        foreach ($mat_depth as $j => $item) {
+            if (!empty($item)) {
+                $arBlockData['therm_lag'] = $arBlockData['therm_lag'] + (($item / 1000) / $_SESSION['cal_coef_therm_cond'][$j]) * $_SESSION['area'][$j];
+            }
+        }
+        $arBlockData['surface_temp'] = $arCityData['city_temp_in'] - (($arCityData['city_temp_in'] - $arCityData['calucl_tem_out_houses']) / ($arCityData['city_temp_in'] * $arBlockTypeData['coef_heat']));
+    }
+
+    // вычисления сумм элементов
+    $arBlockData['summ_depth'] = 0;
+    foreach ($mat_depth as $item) {
+        $arBlockData['summ_depth'] = $arBlockData['summ_depth'] + $item;
+    }
+
+    $arBlockData['summ_r'] = 0;
+    $arBlockData['rcon'] = 0;
+    foreach ($_SESSION['mat_id'] as $i => $item) {
+
+        $arBlockData['summ_r'] = $arBlockData['summ_r'] + $_SESSION['therm_res_calc'][$i-1];
+
+        $item = addslashes($item);
+        $mat_r = $db->getArray("SELECT is_izol FROM goods WHERE id ='" . $item . "'");
+        if (!empty($mat_r)) {
+            if ($mat_r[0]['is_izol'] === "0" && $_SESSION['therm_res_calc'][$i-1] <> 0) {
+                $arBlockData['rcon'] = $arBlockData['rcon'] + ($mat_depth[$i-1] / $_SESSION['therm_res_calc'][$i-1]);
+            }
+        }
+    }
+
+    $arBlockData['summ_r'] = $arBlockData['summ_r'] + 0.158;
+    $arBlockData['rcon'] = $arBlockData['rcon'] / 1000;
+
+
+
+    $arBlockData['dry_density'] = round($arBlockData['dry_density'], 3);
+    $arBlockData['cal_coef_therm_cond'] = round($arBlockData['cal_coef_therm_cond'], 3);
+    $arBlockData['area'] = round($arBlockData['area'], 3);
+    $arBlockData['cal_coef_vapor'] = round($arBlockData['cal_coef_vapor'], 3);
+    $arBlockData['therm_res_calc'] = round($arBlockData['therm_res_calc'], 3);
+    $arBlockData['d'] = round($arBlockData['d'], 3);
+    $arBlockData['d1dn'] = round($arBlockData['d1dn'], 3);
+    $arBlockData['y'] = round($arBlockData['y'], 3);
+    $arBlockData['dw'] = round($arBlockData['dw'], 3);
+    $arBlockData['therm_lag'] = round($arBlockData['therm_lag'], 3);
+    $arBlockData['surface_temp'] = round($arBlockData['surface_temp'], 3);
+    $arBlockData['summ_depth'] = round($arBlockData['summ_depth'], 3);
+    $arBlockData['summ_r'] = round($arBlockData['summ_r'], 3);
+    $arBlockData['rcon'] = round($arBlockData['rcon'], 3);
+
+    if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_id"]) && !empty($_POST["block_id"])) {
+        response_json($arBlockData);
+    }
 }
+
+
 ?>

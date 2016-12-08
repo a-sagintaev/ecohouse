@@ -113,7 +113,7 @@
                     </tr>
                     <tr>
                         <td>ГСОП</td>
-                        <td> <div id="city_deegre_day_civil"></div> </td>
+                        <td> <div id="city_deegre_day_houses"></div> </td>
                     </tr>
                     <tr>
                         <td>Условия экспл. в зонах влажности</td>
@@ -139,12 +139,19 @@
                     <tr>
                         <td><strong>Вид наружного ограждения </strong></td>
                         <td>
-                            <select class="BlockTypeSelect" id="BlockTypeSelect" disabled="true">
-                                <option selected disabled>Выберете вид наружного ограждения </option>
+                            <?php if(!isset($_SESSION['city_id'])) {
+
+                                $isDisabled=' disabled';
+                                }
+                             ?>
+                            <select class="BlockTypeSelect" id="BlockTypeSelect" <?php echo $isDisabled?> >
                                 <?php
-                                $block_types=get_id_name('block_types');
-                                foreach ($block_types as $block_type){
-                                    echo "<option value=' ".$block_type['id']." '>".$block_type['name']."</option>";
+                                $arBlockTypes=get_id_name('block_types');
+                                $arBlockTypes = array_merge(array(array("id" => 0, "name" => "Выберете вид наружного ограждения")),$arBlockTypes);
+
+                                foreach ($arBlockTypes as $blockType){
+                                    $selected = isset($_SESSION['blocktype_id']) && $_SESSION['blocktype_id'] == $blockType['id'] ? " selected='selected'" : "";
+                                    echo "<option value='" . $blockType['id'] . "'".$selected.">" . $blockType['name'] . "</option>\n";
                                 }
                                 ?>
                             </select>
@@ -154,12 +161,19 @@
                         <td> <strong>Конструктивное решение наружного ограждения</strong>  </td>
                         <td>
                             <div>
-                                <select class="BlockConsSelect" id="BlockConsSelect" disabled="true">
-                                    <option selected disabled>Выберете конструктивное решение наружного ограждения</option>
+                                <?php if(!isset($_SESSION['blocktype_id'])) {
+
+                                    $isDisabled=' disabled';
+                                }
+                                ?>
+                                <select class="BlockConsSelect" id="BlockConsSelect" <?php echo $isDisabled?> >
+
                                     <?php
-                                    $uniformitys=get_id_name('uniformity');
-                                    foreach ($uniformitys as $uniformity){
-                                        echo "<option value=' ".$uniformity['id']." '>".$uniformity['name']."</option>";
+                                    $arBlockCons=get_id_name('uniformity');
+                                    $arBlockCons = array_merge(array(array("id" => 0, "name" => "Выберете конструктивное решение наружного ограждения")),$arBlockCons);
+                                    foreach ($arBlockCons as $blockCon){
+                                        $selected = isset($_SESSION['blockcons_id']) && $_SESSION['blockcons_id'] == $blockCon['id'] ? " selected='selected'" : "";
+                                        echo "<option value='" . $blockCon['id'] . "'".$selected.">" . $blockCon['name'] . "</option>\n";
                                     }
                                     ?>
                                 </select>
@@ -190,7 +204,7 @@
                 <!--<th> n= </th>
                 <th> Rи </th>
                 <th> би </th> -->
-                <?php $goods=get_id_name('goods'); ?>
+
                 <tr>
 
                     <td>  </td>
@@ -208,18 +222,26 @@
 
                 </tr>
                 <?php
+                $arGoods=get_id_name('goods');
+                $arGoods = array_merge(array(array("id" => 0, "name" => "Материал не выбран")),$arGoods);
+
                 for ($i=1;$i<=9;$i++) {
                     echo "<tr>";
                     echo "<td>$i."."</td>";
                     // materials
-                    echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'  disabled=\"true\">";
-                    echo "<option selected value='0'>Материал не выбран</option>";
-                    foreach ($goods as $good){
-                        echo "<option value=' ".$good['id']." '>".$good['name']."</option>";
+                    if(!isset($_SESSION['mat_id'][$i-1]) && $i>1) {
+                        $isDisabled=' disabled';
+                    }
+
+                    echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'  <?php echo $isDisabled?>>";
+
+                    foreach ($arGoods as $good){
+                        $selected = isset($_SESSION['mat_id'][$i]) && $_SESSION['mat_id'][$i] == $good['id'] ? " selected='selected'" : "";
+                        echo "<option value='" . $good['id'] . "'".$selected.">" . $good['name'] . "</option>\n";
                     }
 
                     echo "</select></td>";
-                    echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i' disabled=\"true\"> </td>";
+                    echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i' <?php echo $isDisabled?> </td>";
                     echo "<td><div class='mat_dry_density_1' id='mat_dry_density_1_$i'></div></td>";
                     echo "<td><div class='mat_cal_coef_therm_cond_1' id='mat_cal_coef_therm_cond_1_$i'></div></td>";
                     echo "<td><div class='mat_area_1' id='mat_area_1_$i'></div></td>";

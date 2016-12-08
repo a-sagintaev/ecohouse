@@ -2,51 +2,31 @@
 
 /*console.log('$data.mat_depth[k] = ' + $data.mat_depth[k]);*/
 
-function collect_block_depth(fmatID, fblockID){
+function collect_block_depth(fmat_id, fblock_id){
 	var $fdata = {};
 
-	$fdata.blockID=fblockID;
+	$fdata.block_id=fblock_id;
 	$fdata.mat_depth = new Array();
-	for(var k = 1; k < 10; k++)
+	for(var k = 0; k < 9; k++)
 	{
-		$fdata.mat_depth[k] = $('#mat_depth_1_' + k).val();
+		n=k+1;
+		$fdata.mat_depth[k] = $('#mat_depth_1_' + n).val();
 	}
 
-	$fdata.mat_id=fmatID;
+	$fdata.mat_id=fmat_id;
 
-	/* @@@@@ Not needed, I hope @@@@@@
-
-	$fdata.mat_depth_cur = fselect.parents('tr').find('.mat_depth_1').val();
-	$fdata.mat_r_cur = fselect.parents('tr').find('.mat_therm_res_calc_1').val();
-	$fdata.city_zone_ab = $('#city_zone_ab').html();
-	$fdata.city_temp_in = $('#city_temp_in').html();
-	$fdata.city_temp_out = $('#city_calucl_tem_out_most_cold_5_day').html();
-	$fdata.mat_r = new Array();
-
-	for(var k = 1; k < 10; k++)
-	{
-		$fdata.mat_r[k] = $('#mat_therm_res_calc_1_' + k).html();
-	}
-	$fdata.mat_l = new Array();
-	for(var k = 1; k < 10; k++)
-	{
-		$fdata.mat_l[k] = $('#mat_cal_coef_therm_cond_1_' + k).html();
-	}
-
-	$fdata.mat_l_cur = fselect.parents('tr').find('.mat_cal_coef_therm_cond_1').val();
-	*/
 
 	return $fdata;
 
 }
 
 
-function print_block_data(fdata, fmatID, fselect) {
+function get_block_data(fdata, fmat_id, fselect) {
 	fdata=arguments[0];
-	fmatID=arguments[1];
+	fmat_id=arguments[1];
 	fselect=arguments[2];
 
-	if(fmatID){
+	if(fmat_id){
 		$.ajax({
 			type:'POST',
 			url:'/',
@@ -64,7 +44,7 @@ function print_block_data(fdata, fmatID, fselect) {
 				fselect.parents('tr').find('.mat_y_1').html(obj.y);
 				fselect.parents('tr').find('.mat_dw_1').html(obj.dw);
 				fselect.parents('tr').find('.temp_coef_heat_1').html(obj.coef_heat);
-				$('#mat_summ_depth').html(obj.summ);
+				$('#mat_summ_depth').html(obj.summ_depth);
 				$('#temp_therm_lag').html(obj.therm_lag);
 				$('#temp_surface_temp').html(obj.surface_temp);
 				$('#mat_summ_r').html(obj.summ_r);
@@ -74,7 +54,7 @@ function print_block_data(fdata, fmatID, fselect) {
 	}
 }
 
-function getCityData(cityID)
+function get_city_data(cityID)
 {
 	$.ajax({
 		type:'POST',
@@ -88,13 +68,39 @@ function getCityData(cityID)
 			$('#city_dew_temp_point').html(obj.dew_temp_point);
 			$('#city_calucl_tem_out_most_cold_5_day').html(obj.calucl_tem_out_most_cold_5_day);
 			$('#city_duration_heating_house').html(obj.duration_heating_house);
-			$('#city_deegre_day_civil').html(obj.deegre_day_civil);
+			$('#city_deegre_day_houses').html(obj.deegre_day_houses);
 			$('#city_zone_ab').html(obj.zone_ab);
 			$('#city_cold_mid_hum_month').html(obj.cold_mid_hum_month);
 		}
 	});
 }
 
+function get_block_type_data(BlockTypeID) {
+	$.ajax({
+		type:'POST',
+		url:'/',
+		data:'blocktype_id='+BlockTypeID,
+		success:function(html){
+			var obj=$.parseJSON(html);
+			$('#temp_coef_heat').html(obj.coef_heat);
+			$('#temp_coef_heap_cond').html(obj.coef_heap_cond);
+			$('#temp_n').html(obj.n);
+			$('#temp_diff').html(obj.diff);
+		}
+	});
+}
+
+function get_block_cons_data(BlockConsID) {
+	$.ajax({
+		type:'POST',
+		url:'/',
+		data:'blockcons_id='+BlockConsID,
+		success:function(html){
+			var obj=$.parseJSON(html);
+			$('#temp_ratio').html(obj.ratio);
+		}
+	});
+}
 
 $(document).ready(function(){
 	
@@ -112,7 +118,7 @@ $(document).ready(function(){
 	$('#citySelect').on('change',function(){
 		var cityID = $(this).val();
 		if(cityID){
-			getCityData(cityID);
+			get_city_data(cityID);
 			if(cityID != 0)
 			{
 				$('#BlockTypeSelect').prop('disabled', false);
@@ -123,19 +129,21 @@ $(document).ready(function(){
 			}
 		}
 	});
+
 	if($('#citySelect').val() != 0)
 	{
-		getCityData($('#citySelect').val());
+		get_city_data($('#citySelect').val());
 	}
+
 
 
 	$('.BlockSelect').on('change',function(){
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
 	    var select = $(this);
-		var matID = select.val();
+		var mat_id = select.val();
 
-		var $data = collect_block_depth(matID, block_1_id);
-		print_block_data($data, matID, select);
+		var $data = collect_block_depth(mat_id, block_1_id);
+		get_block_data($data, mat_id, select);
 
         k=parseInt(block_1_id)+1;
         if (k<=9)
@@ -151,22 +159,19 @@ $(document).ready(function(){
             }
         }
 	});
+	for (var block_i = 1; block_i <= 9; block_i++) {
+		if ($('#BlockSelect_1_'+block_i).val() != 0) {
+			var select = $('#BlockSelect_1_'+block_i);  //<select#BlockSelect_1_1.BlockSelect>
+			var $data = collect_block_depth($('#BlockSelect_1_'+block_i).val(), block_i);
+			get_block_data($data, $('#BlockSelect_1_'+block_i).val(), select);
+		}
+	}
+
 
 	$('#BlockTypeSelect').on('change',function(){
 		var BlockTypeID = $(this).val();
 		if(BlockTypeID){
-			$.ajax({
-				type:'POST',
-				url:'/',
-				data:'blocktype_id='+BlockTypeID,
-				success:function(html){
-					var obj=$.parseJSON(html);
-					$('#temp_coef_heat').html(obj.coef_heat);
-					$('#temp_coef_heap_cond').html(obj.coef_heap_cond);
-					$('#temp_n').html(obj.n);
-					$('#temp_diff').html(obj.diff);
-				}
-			});
+			get_block_type_data(BlockTypeID);
 		}
         if($(this).val() != 0)
         {
@@ -180,18 +185,17 @@ $(document).ready(function(){
 
 	});
 
+
+	if($('#BlockTypeSelect').val() != 0)
+	{
+		get_block_type_data($('#BlockTypeSelect').val());
+	}
+
+
 	$('#BlockConsSelect').on('change',function(){
 		var BlockConsID = $(this).val();
 		if(BlockConsID){
-			$.ajax({
-				type:'POST',
-				url:'/',
-				data:'blockcons_id='+BlockConsID,
-				success:function(html){
-					var obj=$.parseJSON(html);
-					$('#temp_ratio').html(obj.ratio);
-				}
-			});
+			get_block_cons_data(BlockConsID);
 		}
         if($(this).val() != 0)
         {
@@ -202,26 +206,31 @@ $(document).ready(function(){
             $('#BlockSelect_1_1').prop('disabled', true);
         }
 	});
-	
-	
+
+	if($('#BlockConsSelect').val() != 0)
+	{
+		get_block_cons_data($('#BlockConsSelect').val());
+	}
+
+
 	$('.mat_depth_1').on('change',function(){
 
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
 		var select = $('#BlockSelect_1_'+ block_1_id);
-		var matID = $('#BlockSelect_1_'+ block_1_id).val();
+		var mat_id = $('#BlockSelect_1_'+ block_1_id).val();
 
-		var $data = collect_block_depth(matID,block_1_id);
+		var $data = collect_block_depth(mat_id,block_1_id);
 
-		print_block_data($data, matID, select);
+		get_block_data($data, mat_id, select);
 	});
 	$('.mat_depth_1').on('keyup',function(){
 
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
 		var select = $('#BlockSelect_1_'+ block_1_id);
-		var matID = $('#BlockSelect_1_'+ block_1_id).val();
+		var mat_id = $('#BlockSelect_1_'+ block_1_id).val();
 
-		var $data = collect_block_depth(matID,block_1_id);
+		var $data = collect_block_depth(mat_id,block_1_id);
 
-		print_block_data($data, matID, select);
+		get_block_data($data, mat_id, select);
 	});
 });
