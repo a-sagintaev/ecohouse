@@ -71,7 +71,7 @@ elseif(isset($_SESSION['blocktype_id'])  && !empty($_SESSION['blocktype_id']))
 
 if (isset($blocktype_id)) {
     $blocktype_id=addslashes($blocktype_id);
-    $arBlockTypeData = $db->getArray("SELECT coef_heat, coef_heap_cond, n, diff FROM block_types WHERE id ='".$blocktype_id."'");
+    $arBlockTypeData = $db->getArray("SELECT * FROM block_types WHERE id ='".$blocktype_id."'");
 
     if (!empty($arBlockTypeData)) {
         $arBlockType = current($arBlockTypeData);
@@ -81,11 +81,14 @@ if (isset($blocktype_id)) {
         $arBlockTypeData['coef_heap_cond'] = $arBlockType['coef_heap_cond'];
         $arBlockTypeData['n'] = $arBlockType['n'];
         $arBlockTypeData['diff'] = $arBlockType['diff'];
+        $arBlockTypeData['r0_min1'] = $arBlockType['r0_min1'];
+        $arBlockTypeData['a'] = $arBlockType['a'];
+        $arBlockTypeData['b'] = $arBlockType['b'];
 
         $arBlockTypeData['coef_heat'] = round($arBlockTypeData['coef_heat'], 3);
         $arBlockTypeData['coef_heap_cond'] = round($arBlockTypeData['coef_heap_cond'], 3);
         $arBlockTypeData['n'] = round($arBlockTypeData['n'], 3);
-        $arBlockTypeData['n'] = round($arBlockTypeData['n'], 3);
+        $arBlockTypeData['diff'] = round($arBlockTypeData['diff'], 3);
     }
 
     if(isset($_POST["blocktype_id"]))
@@ -134,12 +137,13 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_i
 
     // создаем или перезаписываем сессию
     $_SESSION['mat_id'][$block_id] = $mat_id;
-} elseif (isset($_SESSION['mat_id'][$_POST["block_id"]]))
-{
-    $mat_id = $_SESSION['mat_id'][$_POST["block_id"]];
-    $block_id = $_POST["block_id"];
+} elseif (isset($_POST["block_id"]) && !empty($_POST["block_id"]))
+    {
+    if (isset($_SESSION['mat_id'][$_POST["block_id"]])) {
+        $mat_id = $_SESSION['mat_id'][$_POST["block_id"]];
+        $block_id = $_POST["block_id"];
+    }
 }
-
 
 if (isset($mat_id) && isset($block_id)) {
 
@@ -153,52 +157,24 @@ if (isset($mat_id) && isset($block_id)) {
             $mat_depth[$i]  = $value;
         }
     }
+    $_SESSION['mat_depth']=$mat_depth;
     $arBlockData = $db->getArray("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id ='" . $mat_id . "'");
 
-
-    /*      if (!isset($_SESSION['dry_density'])) {
-              $_SESSION['dry_density'] = array();
-          }
-          if (!isset($_SESSION['cal_coef_therm_cond'])) {
-              $_SESSION['cal_coef_therm_cond'] = array();
-          }
-          if (!isset($_SESSION['area'])) {
-              $_SESSION['area'] = array();
-          }
-          if (!isset($_SESSION['cal_coef_vapor'])) {
-              $_SESSION['cal_coef_vapor'] = array();
-          }
-          if (!isset($_SESSION['therm_res_calc'])) {
-              $_SESSION['therm_res_calc'] = array();
-          }
-          if (!isset($_SESSION['d'])) {
-              $_SESSION['d'] = array();
-          }
-          if (!isset($_SESSION['d1dn'])) {
-              $_SESSION['d1dn'] = array();
-          }
-          if (!isset($_SESSION['y'])) {
-              $_SESSION['y'] = array();
-          }
-          if (!isset($_SESSION['dw'])) {
-              $_SESSION['dw'] = array();
-          }
-          if (!isset($_SESSION['is_izol'])) {
-              $_SESSION['is_izol'] = array();
-          }
-  */
 
     if (!empty($arBlockData)) {
         $arBlock = current($arBlockData);
         $arBlockData = array();
 
+
         $arBlockData['dry_density'] = $arBlock['dry_density'];
-        $arBlockData['cal_coef_therm_cond'] = $arBlock['cal_coef_therm_cond_a'];
-        if($arBlock['cal_coef_therm_cond_a'] <> null) {
-            $_SESSION['cal_coef_therm_cond'][$block_id_var] = $arBlockData['cal_coef_therm_cond'];
+        if($arCityData['zone_ab'] == "A") {
+            $arBlockData['cal_coef_therm_cond'] = $arBlock['cal_coef_therm_cond_a'];
         } else {
-            $_SESSION['cal_coef_therm_cond'][$block_id_var]=1;
+            $arBlockData['cal_coef_therm_cond'] = $arBlock['cal_coef_therm_cond_b'];
         }
+
+        $_SESSION['cal_coef_therm_cond'][$block_id_var] = $arBlockData['cal_coef_therm_cond'];
+
         if ($arCityData['zone_ab'] == "A") {
             $arBlockData['area'] = 0.27 * sqrt($arBlock['dry_therm_cond'] * $arBlockData['dry_density'] * ($arBlock['dry_spec_heat'] - 0.0419 * $arBlock['calc_wat_in_mater_a']));
         } else {
@@ -208,7 +184,7 @@ if (isset($mat_id) && isset($block_id)) {
         $arBlockData['cal_coef_vapor'] = $arBlock['cal_coef_vapor'];
         $arBlockData['therm_res_calc'] = $arBlock['therm_res_calc'];
 
-        if ($arBlockData['therm_res_calc'] == 0) {
+        if ($arBlockData['therm_res_calc'] == 0 && $arBlockData['cal_coef_therm_cond'] <> null) {
             $arBlockData['therm_res_calc'] = $mat_depth[$block_id_var] / 1000 / $arBlockData['cal_coef_therm_cond'];
         }
         $_SESSION['therm_res_calc'][$block_id_var]=$arBlockData['therm_res_calc'];
@@ -231,7 +207,7 @@ if (isset($mat_id) && isset($block_id)) {
         }
         $arBlockData['therm_lag'] = 0;
         foreach ($mat_depth as $j => $item) {
-            if (!empty($item)) {
+            if (!empty($item && $_SESSION['cal_coef_therm_cond'][$j] <> null)) {
                 $arBlockData['therm_lag'] = $arBlockData['therm_lag'] + (($item / 1000) / $_SESSION['cal_coef_therm_cond'][$j]) * $_SESSION['area'][$j];
             }
         }
@@ -245,7 +221,9 @@ if (isset($mat_id) && isset($block_id)) {
     }
 
     $arBlockData['summ_r'] = 0;
-    $arBlockData['rcon'] = 0;
+    $arBlockData['r_con'] = 0;
+    $arBlockData['izol_summ']=0;
+    $arBlockData['izol_summ_fact']=0;
     foreach ($_SESSION['mat_id'] as $i => $item) {
 
         $arBlockData['summ_r'] = $arBlockData['summ_r'] + $_SESSION['therm_res_calc'][$i-1];
@@ -253,15 +231,23 @@ if (isset($mat_id) && isset($block_id)) {
         $item = addslashes($item);
         $mat_r = $db->getArray("SELECT is_izol FROM goods WHERE id ='" . $item . "'");
         if (!empty($mat_r)) {
-            if ($mat_r[0]['is_izol'] === "0" && $_SESSION['therm_res_calc'][$i-1] <> 0) {
-                $arBlockData['rcon'] = $arBlockData['rcon'] + ($mat_depth[$i-1] / $_SESSION['therm_res_calc'][$i-1]);
+            if ($mat_r[0]['is_izol'] === "0" && $_SESSION['cal_coef_therm_cond'][$i-1] <> 0) {
+                $arBlockData['r_con'] = $arBlockData['r_con'] + ($mat_depth[$i-1] / $_SESSION['cal_coef_therm_cond'][$i-1]);
+            } elseif ($mat_r[0]['is_izol'] === "1" && $_SESSION['therm_res_calc'][$i-1] <> 0) {
+                $arBlockData['izol_summ_fact']=$arBlockData['izol_summ_fact']+$mat_depth[$i-1];
             }
         }
     }
 
     $arBlockData['summ_r'] = $arBlockData['summ_r'] + 0.158;
-    $arBlockData['rcon'] = $arBlockData['rcon'] / 1000;
+    $arBlockData['r_con'] = $arBlockData['r_con'] / 1000;
 
+    if(isset($arBlockTypeData['r0_min1']) && $arBlockTypeData['r0_min1'] == "1") {
+        $arBlockData['r0_min1']=$arBlockTypeData['coef_heat']*($arCityData['city_temp_in']-$arCityData['calucl_tem_out_most_cold_5_day'])/($arBlockTypeData['diff']*$arBlockTypeData['coef_heat']);
+    }
+    $arBlockData['r0_min2'] = $arBlockTypeData['a']*$arCityData['deegre_day_houses'] +$arBlockTypeData['b'];
+    $max_izol_cal_coef_therm_cond=get_max_izol_cal_coef_therm_cond();
+    $arBlockData['izol_depth_formula'] = (($arBlockData['r0_min2']/$arBlockConsData['ratio'])-$arBlockData['r_con']-(1/$arBlockTypeData['coef_heat'])- (1/$arBlockTypeData['coef_heap_cond']))*$max_izol_cal_coef_therm_cond;
 
 
     $arBlockData['dry_density'] = round($arBlockData['dry_density'], 3);
@@ -277,7 +263,17 @@ if (isset($mat_id) && isset($block_id)) {
     $arBlockData['surface_temp'] = round($arBlockData['surface_temp'], 3);
     $arBlockData['summ_depth'] = round($arBlockData['summ_depth'], 3);
     $arBlockData['summ_r'] = round($arBlockData['summ_r'], 3);
-    $arBlockData['rcon'] = round($arBlockData['rcon'], 3);
+    $arBlockData['r_con'] = round($arBlockData['r_con'], 3);
+    $arBlockData['r_usl'] = $arBlockData['summ_r'];
+    $arBlockData['r_prev']=round($arBlockData['r_usl']*$arBlockConsData['ratio'],3);
+    $arBlockData['izol_depth_formula'] = round($arBlockData['izol_depth_formula'],3);
+
+    if(isset($arBlockData['r0_min1']) && !empty($arBlockData['r0_min1'])) {
+        $arBlockData['r0_min1'] = round($arBlockData['r0_min1'], 3);
+    } else {
+        $arBlockData['r0_min1']="";
+    }
+    $arBlockData['izol_summ_fact']=round($arBlockData['izol_summ_fact']/1000,3);
 
     if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_id"]) && !empty($_POST["block_id"])) {
         response_json($arBlockData);

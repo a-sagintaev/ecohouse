@@ -142,7 +142,9 @@
                             <?php if(!isset($_SESSION['city_id'])) {
 
                                 $isDisabled=' disabled';
-                                }
+                            } else {
+                                $isDisabled='';
+                            }
                              ?>
                             <select class="BlockTypeSelect" id="BlockTypeSelect" <?php echo $isDisabled?> >
                                 <?php
@@ -164,6 +166,8 @@
                                 <?php if(!isset($_SESSION['blocktype_id'])) {
 
                                     $isDisabled=' disabled';
+                                } else {
+                                    $isDisabled='';
                                 }
                                 ?>
                                 <select class="BlockConsSelect" id="BlockConsSelect" <?php echo $isDisabled?> >
@@ -231,9 +235,11 @@
                     // materials
                     if(!isset($_SESSION['mat_id'][$i-1]) && $i>1) {
                         $isDisabled=' disabled';
+                    } else {
+                        $isDisabled='';
                     }
 
-                    echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'  <?php echo $isDisabled?>>";
+                    echo "<td> <select class='BlockSelect' id='BlockSelect_1_$i'  $isDisabled>";
 
                     foreach ($arGoods as $good){
                         $selected = isset($_SESSION['mat_id'][$i]) && $_SESSION['mat_id'][$i] == $good['id'] ? " selected='selected'" : "";
@@ -241,17 +247,24 @@
                     }
 
                     echo "</select></td>";
-                    echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i' <?php echo $isDisabled?> </td>";
-                    echo "<td><div class='mat_dry_density_1' id='mat_dry_density_1_$i'></div></td>";
-                    echo "<td><div class='mat_cal_coef_therm_cond_1' id='mat_cal_coef_therm_cond_1_$i'></div></td>";
-                    echo "<td><div class='mat_area_1' id='mat_area_1_$i'></div></td>";
-                    echo "<td><div class='mat_cal_coef_vapor_1' id='mat_cal_coef_vapor_1_$i'></div></td>";
-                    echo "<td><div class='mat_therm_res_calc_1' id='mat_therm_res_calc_1_$i'></div></td>";
-                    echo "<td><div class='mat_d_1' id='mat_d_1_$i'></div></td>";
-                    echo "<td><div class='mat_d1dn_1' id='mat_d1dn_1_$i'></div></td>";
-                    echo "<td><div class='mat_y_1' id='mat_y_1_$i'></div></td>";
-                    echo "<td><div class='mat_dw_1' id='mat_dw_1_$i'></div></td>";
-                    echo "</tr>";
+
+                    if (isset($_SESSION['mat_depth'][$i]) && !empty($_SESSION['mat_depth'][$i]))
+                    {
+                        $value= $_SESSION['mat_depth'][$i-1];
+                    } else {
+                        $value = "";
+                    }
+                    echo "<td><input type='text' class='mat_depth_1' id='mat_depth_1_$i' name='mat_depth_1_$i' value='$value'  $isDisabled> </td>\n";
+                    echo "<td><div class='mat_dry_density_1' id='mat_dry_density_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_cal_coef_therm_cond_1' id='mat_cal_coef_therm_cond_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_area_1' id='mat_area_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_cal_coef_vapor_1' id='mat_cal_coef_vapor_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_therm_res_calc_1' id='mat_therm_res_calc_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_d_1' id='mat_d_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_d1dn_1' id='mat_d1dn_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_y_1' id='mat_y_1_$i'></div></td>\n";
+                    echo "<td><div class='mat_dw_1' id='mat_dw_1_$i'></div></td>\n";
+                    echo "</tr>\n";
                 }
                 ?>
                 <tr>
@@ -299,53 +312,55 @@
             <tr>
                 <td class="dataName"> Коэффициент теплоотд. внутр. пов.  aв= </td>
                 <td> <div id="temp_coef_heat"></div></td>
-                <td class="dataName"> Для определения толщины изоляции Rcon = </td>
-                <td> <div id="temp_rcon"></div> </td>
+                <td class="dataName"> Для определения толщины изоляции r_con = </td>
+                <td> <div id="temp_r_con"></div> </td>
             </tr>
             <tr>
                 <td class="dataName"> Коэффициент теплоотд. наруж.пов.  aн= </td>
                 <td> <div id="temp_coef_heap_cond"></div></td>
                 <td class="dataName"> Rусл= </td>
-                <td> </td>
+                <td> <div id="temp_r_usl"></div></td>
             </tr>
             <tr>
                 <td class="dataName"> Коэффициент теплотехн. однород.  rод.= </td>
                 <td> <div id="temp_ratio"></div> </td>
                 <td class="dataName"> Rпр= </td>
-                <td> </td>
+                <td> <div id="temp_r_prev"></div></td>
             </tr>
             <tr>
                 <td class="dataName"> Коэффициент полож.наруж поверхн.  n= </td>
                 <td> <div id="temp_n"></div></td>
                 <td class="dataName"> Ro.мин1= </td>
-                <td> </td>
+                <td> <div id="temp_r0_min1"></div> </td>
             </tr>
             <tr>
                 <td class="dataName"> Нормируемый  температур.перепад, oC Dtн= </td>
                 <td> <div id="temp_diff"></div> </td>
                 <td class="dataName"> Ro.мин2= </td>
-                <td> </td>
+                <td> <div id="temp_r0_min2"></td>
             </tr>
             <tr>
                 <td class="dataName"> Темп. воздуха эксплутац. помещения tc= </td>
                 <td> <input type="text" value="5"> </td>
                 <td class="dataName"> Необходимая толщина изоляции = </td>
-                <td> </td>
+                <td> <div id="temp_izol_depth_calculated"></div> </td>
             </tr>
             <tr>
                 <td class="dataName"> Тепловая инерция  D= </td>
                 <td> <div id="temp_therm_lag"></div></td>
                 <td class="dataName"> Фактическая толщина изоляции= </td>
-                <td> </td>
+                <td> <div id="temp_izol_summ_fact"></div></td>
             </tr>
             <tr>
                 <td class="dataName"> 'tповерх.= </td>
                 <td> <div id="temp_surface_temp"></div></td>
                 <td class="dataName"> Толщина Изоляции по формуле= </td>
-                <td> </td>
+                <td> <div id="temp_izol_depth_formula"></td>
             </tr>
 
         </table>
+        <p>
+        <button class="cal_izol_depth" id="cal_izol_depth"> Рассчитать необходимую толщину изоляции </button>
     </div>
 
     <div id="tab-3" class="tab-content">

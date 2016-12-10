@@ -2,10 +2,9 @@
 
 /*console.log('$data.mat_depth[k] = ' + $data.mat_depth[k]);*/
 
-function collect_block_depth(fmat_id, fblock_id){
+function collect_block_depth(){
 	var $fdata = {};
 
-	$fdata.block_id=fblock_id;
 	$fdata.mat_depth = new Array();
 	for(var k = 0; k < 9; k++)
 	{
@@ -13,20 +12,19 @@ function collect_block_depth(fmat_id, fblock_id){
 		$fdata.mat_depth[k] = $('#mat_depth_1_' + n).val();
 	}
 
-	$fdata.mat_id=fmat_id;
-
-
 	return $fdata;
 
 }
 
 
-function get_block_data(fdata, fmat_id, fselect) {
+function get_block_data(fdata, fblock_id) {
 	fdata=arguments[0];
-	fmat_id=arguments[1];
-	fselect=arguments[2];
+	fblock_id=arguments[1];
+	var fselect = $('#BlockSelect_1_'+ fblock_id);
+	fdata.block_id=fblock_id;
+	fdata.mat_id=$('#BlockSelect_1_'+ fblock_id).val();
 
-	if(fmat_id){
+	if(fdata.mat_id){
 		$.ajax({
 			type:'POST',
 			url:'/',
@@ -48,7 +46,13 @@ function get_block_data(fdata, fmat_id, fselect) {
 				$('#temp_therm_lag').html(obj.therm_lag);
 				$('#temp_surface_temp').html(obj.surface_temp);
 				$('#mat_summ_r').html(obj.summ_r);
-				$('#temp_rcon').html(obj.rcon);
+				$('#temp_r_con').html(obj.r_con);
+				$('#temp_r_usl').html(obj.r_usl);
+				$('#temp_r_prev').html(obj.r_prev);
+				$('#temp_r0_min1').html(obj.r0_min1);
+				$('#temp_r0_min2').html(obj.r0_min2);
+				$('#temp_izol_summ_fact').html(obj.izol_summ_fact);
+				$('#temp_izol_depth_formula').html(obj.izol_depth_formula);
 			}
 		});
 	}
@@ -139,11 +143,9 @@ $(document).ready(function(){
 
 	$('.BlockSelect').on('change',function(){
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
-	    var select = $(this);
-		var mat_id = select.val();
 
-		var $data = collect_block_depth(mat_id, block_1_id);
-		get_block_data($data, mat_id, select);
+		var $data = collect_block_depth();
+		get_block_data($data, block_1_id);
 
         k=parseInt(block_1_id)+1;
         if (k<=9)
@@ -161,9 +163,8 @@ $(document).ready(function(){
 	});
 	for (var block_i = 1; block_i <= 9; block_i++) {
 		if ($('#BlockSelect_1_'+block_i).val() != 0) {
-			var select = $('#BlockSelect_1_'+block_i);  //<select#BlockSelect_1_1.BlockSelect>
-			var $data = collect_block_depth($('#BlockSelect_1_'+block_i).val(), block_i);
-			get_block_data($data, $('#BlockSelect_1_'+block_i).val(), select);
+			var $data = collect_block_depth();
+			get_block_data($data,  block_i);
 		}
 	}
 
@@ -216,21 +217,34 @@ $(document).ready(function(){
 	$('.mat_depth_1').on('change',function(){
 
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
-		var select = $('#BlockSelect_1_'+ block_1_id);
-		var mat_id = $('#BlockSelect_1_'+ block_1_id).val();
+		var $data = collect_block_depth();
 
-		var $data = collect_block_depth(mat_id,block_1_id);
-
-		get_block_data($data, mat_id, select);
+		get_block_data($data, block_1_id);
 	});
 	$('.mat_depth_1').on('keyup',function(){
 
 		var block_1_id = this.id.substring(this.id.length -1, this.id.length);
-		var select = $('#BlockSelect_1_'+ block_1_id);
-		var mat_id = $('#BlockSelect_1_'+ block_1_id).val();
 
-		var $data = collect_block_depth(mat_id,block_1_id);
+		var $data = collect_block_depth();
 
-		get_block_data($data, mat_id, select);
+		get_block_data($data, block_1_id);
+	});
+
+	$('#cal_izol_depth').click(function () {
+
+
+		var fdata = collect_block_depth();
+		fdata.mat_depth.forEach(function (element, index) {
+			var obj_id = index + 1;
+			if ($('#BlockSelect_1_' + obj_id).val() != 0 && element == "") {
+				var kj = 1;
+				while (kj < 100 ) {
+				//while ($('#temp_r_prev').html() < $('#temp_r0_min2').html()) {
+					$('#mat_depth_1_' + obj_id).val($('#mat_depth_1_' + obj_id).val() + 1);
+					get_block_data(fdata, obj_id);
+					kj++;
+				}
+			}
+		});
 	});
 });
