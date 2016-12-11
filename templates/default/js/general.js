@@ -53,8 +53,14 @@ function get_block_data(fdata, fblock_id) {
 				$('#temp_r0_min2').html(obj.r0_min2);
 				$('#temp_izol_summ_fact').html(obj.izol_summ_fact);
 				$('#temp_izol_depth_formula').html(obj.izol_depth_formula);
+				$('#vapor_r_po').html(obj.r_po);
+
+
 			}
+
 		});
+
+
 	}
 }
 
@@ -232,19 +238,34 @@ $(document).ready(function(){
 
 	$('#cal_izol_depth').click(function () {
 
-
+		$found = 0;
 		var fdata = collect_block_depth();
 		fdata.mat_depth.forEach(function (element, index) {
 			var obj_id = index + 1;
+
 			if ($('#BlockSelect_1_' + obj_id).val() != 0 && element == "") {
-				var kj = 1;
-				while (kj < 100 ) {
-				//while ($('#temp_r_prev').html() < $('#temp_r0_min2').html()) {
-					$('#mat_depth_1_' + obj_id).val($('#mat_depth_1_' + obj_id).val() + 1);
-					get_block_data(fdata, obj_id);
-					kj++;
-				}
+				$found = 1;
+				fdata.cal_izol_depth = index;
+
+				$.ajax({
+					type: 'POST',
+					url: '/',
+					data: fdata,
+
+					success: function (html) {
+						var obj = $.parseJSON(html);
+						tmp= parseInt(obj.izol_element)+1;
+						$('#temp_izol_depth_calculated_meters').html(obj.izol_depth_calculated_meters);
+						$('#mat_depth_1_' + tmp).val(obj.izol_depth_calculated);
+						var $data = collect_block_depth();
+						get_block_data($data,  tmp);
+					}
+				});
 			}
+
 		});
+		if ($found == 0) {
+			alert("Нет слоя изоляции с неизвестной толщиной");
+		}
 	});
 });

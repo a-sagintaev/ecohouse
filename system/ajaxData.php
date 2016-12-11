@@ -148,16 +148,13 @@ if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_i
 if (isset($mat_id) && isset($block_id)) {
 
     // Works on changing something in blocks.
+    // general tab + termo
     $block_id_var = $block_id - 1;
     $mat_id = addslashes($mat_id);
 
-    $mat_depth = array();
-    if (isset($_POST["mat_depth"])) {
-        foreach ($_POST["mat_depth"] as $i => $value) {
-            $mat_depth[$i]  = $value;
-        }
-    }
-    $_SESSION['mat_depth']=$mat_depth;
+    $mat_depth = get_mat_depth();
+
+
     $arBlockData = $db->getArray("SELECT dry_density, cal_coef_therm_cond_b, cal_coef_therm_cond_a, dry_therm_cond, dry_spec_heat,calc_wat_in_mater_a, calc_wat_in_mater_b, cal_coef_vapor,therm_res_calc, is_izol FROM goods WHERE id ='" . $mat_id . "'");
 
 
@@ -182,6 +179,7 @@ if (isset($mat_id) && isset($block_id)) {
         }
         $_SESSION['area'][$block_id_var]=$arBlockData['area'];
         $arBlockData['cal_coef_vapor'] = $arBlock['cal_coef_vapor'];
+        $_SESSION['cal_coef_vapor'][$block_id_var - 1]=$arBlockData['cal_coef_vapor'];
         $arBlockData['therm_res_calc'] = $arBlock['therm_res_calc'];
 
         if ($arBlockData['therm_res_calc'] == 0 && $arBlockData['cal_coef_therm_cond'] <> null) {
@@ -214,41 +212,31 @@ if (isset($mat_id) && isset($block_id)) {
         $arBlockData['surface_temp'] = $arCityData['city_temp_in'] - (($arCityData['city_temp_in'] - $arCityData['calucl_tem_out_houses']) / ($arCityData['city_temp_in'] * $arBlockTypeData['coef_heat']));
     }
 
-    // вычисления сумм элементов
-    $arBlockData['summ_depth'] = 0;
-    foreach ($mat_depth as $item) {
-        $arBlockData['summ_depth'] = $arBlockData['summ_depth'] + $item;
-    }
+    // calculating depth of all layers
+    $arBlockData['summ_depth'] = array_sum($mat_depth);
+
 
     $arBlockData['summ_r'] = 0;
     $arBlockData['r_con'] = 0;
     $arBlockData['izol_summ']=0;
     $arBlockData['izol_summ_fact']=0;
-    foreach ($_SESSION['mat_id'] as $i => $item) {
 
-        $arBlockData['summ_r'] = $arBlockData['summ_r'] + $_SESSION['therm_res_calc'][$i-1];
+    $arBlockData['summ_r'] = get_summ_r();
+    $arRCon=get_r_con();
+    $arBlockData['izol_summ_fact']=$arRCon['izol_summ_fact'];
+    $arBlockData['r_con']=$arRCon['r_con'];
 
-        $item = addslashes($item);
-        $mat_r = $db->getArray("SELECT is_izol FROM goods WHERE id ='" . $item . "'");
-        if (!empty($mat_r)) {
-            if ($mat_r[0]['is_izol'] === "0" && $_SESSION['cal_coef_therm_cond'][$i-1] <> 0) {
-                $arBlockData['r_con'] = $arBlockData['r_con'] + ($mat_depth[$i-1] / $_SESSION['cal_coef_therm_cond'][$i-1]);
-            } elseif ($mat_r[0]['is_izol'] === "1" && $_SESSION['therm_res_calc'][$i-1] <> 0) {
-                $arBlockData['izol_summ_fact']=$arBlockData['izol_summ_fact']+$mat_depth[$i-1];
-            }
-        }
-    }
-
-    $arBlockData['summ_r'] = $arBlockData['summ_r'] + 0.158;
     $arBlockData['r_con'] = $arBlockData['r_con'] / 1000;
+    $arBlockData['r_usl']=$arBlockData['summ_r'];
+    $arBlockData['r_prev']=$arBlockData['r_usl']*$arBlockConsData['ratio'];
 
     if(isset($arBlockTypeData['r0_min1']) && $arBlockTypeData['r0_min1'] == "1") {
         $arBlockData['r0_min1']=$arBlockTypeData['coef_heat']*($arCityData['city_temp_in']-$arCityData['calucl_tem_out_most_cold_5_day'])/($arBlockTypeData['diff']*$arBlockTypeData['coef_heat']);
     }
     $arBlockData['r0_min2'] = $arBlockTypeData['a']*$arCityData['deegre_day_houses'] +$arBlockTypeData['b'];
+    $_SESSION['r0_min2']=$arBlockData['r0_min2'];
     $max_izol_cal_coef_therm_cond=get_max_izol_cal_coef_therm_cond();
     $arBlockData['izol_depth_formula'] = (($arBlockData['r0_min2']/$arBlockConsData['ratio'])-$arBlockData['r_con']-(1/$arBlockTypeData['coef_heat'])- (1/$arBlockTypeData['coef_heap_cond']))*$max_izol_cal_coef_therm_cond;
-
 
     $arBlockData['dry_density'] = round($arBlockData['dry_density'], 3);
     $arBlockData['cal_coef_therm_cond'] = round($arBlockData['cal_coef_therm_cond'], 3);
@@ -265,7 +253,7 @@ if (isset($mat_id) && isset($block_id)) {
     $arBlockData['summ_r'] = round($arBlockData['summ_r'], 3);
     $arBlockData['r_con'] = round($arBlockData['r_con'], 3);
     $arBlockData['r_usl'] = $arBlockData['summ_r'];
-    $arBlockData['r_prev']=round($arBlockData['r_usl']*$arBlockConsData['ratio'],3);
+    $arBlockData['r_prev']=round($arBlockData['r_prev'],3);
     $arBlockData['izol_depth_formula'] = round($arBlockData['izol_depth_formula'],3);
 
     if(isset($arBlockData['r0_min1']) && !empty($arBlockData['r0_min1'])) {
@@ -275,10 +263,36 @@ if (isset($mat_id) && isset($block_id)) {
     }
     $arBlockData['izol_summ_fact']=round($arBlockData['izol_summ_fact']/1000,3);
 
+    // Vaporizolation
+    // $arBlockData['r_po']=get_r_po();
+
+
     if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_id"]) && !empty($_POST["block_id"])) {
         response_json($arBlockData);
     }
 }
 
+if(isset($_POST['cal_izol_depth']) && (!empty($_POST['cal_izol_depth']))) {
+    $arBlockData['izol_r_calculated']=0;
+    $element=$_POST['cal_izol_depth'];
+    $mat_depth=get_mat_depth();
+    if ($mat_depth[$element]=="") {
+        $mat_depth[$element]="0";
+    }
+    $arBlockData['summ_r'] = get_summ_r();
+    while ($arBlockData['izol_r_calculated'] <= $_SESSION['r0_min2'] && $mat_depth[$elemet]<90000){
+        $arBlockData['delta_summ_r'] = $mat_depth[$element] / 1000 / $_SESSION['cal_coef_therm_cond'][$element];
+        $arBlockData['izol_r_calculated']=($arBlockData['summ_r']+$arBlockData['delta_summ_r'])*$arBlockConsData['ratio'];
+        $mat_depth[$element]++;
+    }
+    $arBlockData['izol_depth_calculated_meters']=$mat_depth[$element]/1000;
+    $arBlockData['izol_depth_calculated_meters']=round($arBlockData['izol_depth_calculated_meters'],3);
+    $arBlockData['izol_depth_calculated']=$mat_depth[$element];
+    $arBlockData['izol_element']=$element;
+
+    if (isset($_POST["cal_izol_depth"]) && !empty($_POST["cal_izol_depth"])) {
+        response_json($arBlockData);
+    }
+}
 
 ?>

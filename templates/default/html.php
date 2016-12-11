@@ -248,7 +248,7 @@
 
                     echo "</select></td>";
 
-                    if (isset($_SESSION['mat_depth'][$i]) && !empty($_SESSION['mat_depth'][$i]))
+                    if (isset($_SESSION['mat_depth'][$i-1]) && !empty($_SESSION['mat_depth'][$i-1]))
                     {
                         $value= $_SESSION['mat_depth'][$i-1];
                     } else {
@@ -301,7 +301,7 @@
 
             </table>
         </form>
-        <button class="addBlock"> Добавить еще один блок</button>
+        <!-- <button class="addBlock"> Добавить еще один блок</button> -->
 
 
     </div>
@@ -343,7 +343,7 @@
                 <td class="dataName"> Темп. воздуха эксплутац. помещения tc= </td>
                 <td> <input type="text" value="5"> </td>
                 <td class="dataName"> Необходимая толщина изоляции = </td>
-                <td> <div id="temp_izol_depth_calculated"></div> </td>
+                <td> <div id="temp_izol_depth_calculated_meters"></div> </td>
             </tr>
             <tr>
                 <td class="dataName"> Тепловая инерция  D= </td>
@@ -368,7 +368,7 @@
             <th colspan="2"> Паропроницаемость </th>
             <tr>
                 <td class="dataName"> Rпо = </td>
-                <td> </td>
+                <td> <div id="vapor_r_po"></td>
             </tr>
             <tr>
                 <td class="dataName"> Rп = </td>
