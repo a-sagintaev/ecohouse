@@ -179,7 +179,7 @@ if (isset($mat_id) && isset($block_id)) {
         }
         $_SESSION['area'][$block_id_var]=$arBlockData['area'];
         $arBlockData['cal_coef_vapor'] = $arBlock['cal_coef_vapor'];
-        $_SESSION['cal_coef_vapor'][$block_id_var - 1]=$arBlockData['cal_coef_vapor'];
+        $_SESSION['cal_coef_vapor'][$block_id_var]=$arBlockData['cal_coef_vapor'];
         $arBlockData['therm_res_calc'] = $arBlock['therm_res_calc'];
 
         if ($arBlockData['therm_res_calc'] == 0 && $arBlockData['cal_coef_therm_cond'] <> null) {
@@ -209,7 +209,7 @@ if (isset($mat_id) && isset($block_id)) {
                 $arBlockData['therm_lag'] = $arBlockData['therm_lag'] + (($item / 1000) / $_SESSION['cal_coef_therm_cond'][$j]) * $_SESSION['area'][$j];
             }
         }
-        $arBlockData['surface_temp'] = $arCityData['city_temp_in'] - (($arCityData['city_temp_in'] - $arCityData['calucl_tem_out_houses']) / ($arCityData['city_temp_in'] * $arBlockTypeData['coef_heat']));
+
     }
 
     // calculating depth of all layers
@@ -229,6 +229,7 @@ if (isset($mat_id) && isset($block_id)) {
     $arBlockData['r_con'] = $arBlockData['r_con'] / 1000;
     $arBlockData['r_usl']=$arBlockData['summ_r'];
     $arBlockData['r_prev']=$arBlockData['r_usl']*$arBlockConsData['ratio'];
+    $arBlockData['surface_temp'] = $arCityData['city_temp_in'] - (($arCityData['city_temp_in'] - $arCityData['calucl_tem_out_most_cold_5_day']) / ($arBlockTypeData['coef_heat'] * $arBlockData['r_usl']));
 
     if(isset($arBlockTypeData['r0_min1']) && $arBlockTypeData['r0_min1'] == "1") {
         $arBlockData['r0_min1']=$arBlockTypeData['coef_heat']*($arCityData['city_temp_in']-$arCityData['calucl_tem_out_most_cold_5_day'])/($arBlockTypeData['diff']*$arBlockTypeData['coef_heat']);
@@ -264,8 +265,21 @@ if (isset($mat_id) && isset($block_id)) {
     $arBlockData['izol_summ_fact']=round($arBlockData['izol_summ_fact']/1000,3);
 
     // Vaporizolation
-    // $arBlockData['r_po']=get_r_po();
+    $arVapor=get_vapor();
+    $arBlockData['r_po']=$arVapor['r_po'];
+    $arBlockData['r_p']=$arVapor['r_p'];
+    $arBlockData['r_pn_tmp']=$arVapor['r_pn_tmp'];
+    $arBlockData['r_pn']=$arVapor['r_pn'];
+    $arBlockData['p']=$arVapor['p'];
 
+    //TODO: Сделать таблицы по теплообмену с графиками.
+
+
+    $arBlockData['r_po']=round($arBlockData['r_po'],3);
+    $arBlockData['r_p']=round($arBlockData['r_p'],3);
+    $arBlockData['r_pn_tmp']=round($arBlockData['r_pn_tmp'],3);
+    $arBlockData['r_pn']=round($arBlockData['r_pn'],3);
+    $arBlockData['p']=round($arBlockData['p'],3);
 
     if (isset($_POST["mat_id"]) && !empty($_POST["mat_id"]) && isset($_POST["block_id"]) && !empty($_POST["block_id"])) {
         response_json($arBlockData);
@@ -280,7 +294,7 @@ if(isset($_POST['cal_izol_depth']) && (!empty($_POST['cal_izol_depth']))) {
         $mat_depth[$element]="0";
     }
     $arBlockData['summ_r'] = get_summ_r();
-    while ($arBlockData['izol_r_calculated'] <= $_SESSION['r0_min2'] && $mat_depth[$elemet]<90000){
+    while ($arBlockData['izol_r_calculated'] <= $_SESSION['r0_min2'] && $mat_depth[$element]<90000){
         $arBlockData['delta_summ_r'] = $mat_depth[$element] / 1000 / $_SESSION['cal_coef_therm_cond'][$element];
         $arBlockData['izol_r_calculated']=($arBlockData['summ_r']+$arBlockData['delta_summ_r'])*$arBlockConsData['ratio'];
         $mat_depth[$element]++;

@@ -54,6 +54,11 @@ function get_block_data(fdata, fblock_id) {
 				$('#temp_izol_summ_fact').html(obj.izol_summ_fact);
 				$('#temp_izol_depth_formula').html(obj.izol_depth_formula);
 				$('#vapor_r_po').html(obj.r_po);
+				$('#vapor_r_p').html(obj.r_p);
+				$('#vapor_r_pn_tmp').html(obj.r_pn_tmp);
+				$('#vapor_r_pn').html(obj.r_pn);
+				$('#vapor_p').html(obj.p);
+
 
 
 			}

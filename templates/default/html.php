@@ -21,10 +21,10 @@
         <li class="tab-link current" data-tab="generalInfo">Общие данные</li>
         <li class="tab-link" data-tab="tab-2">Теплообмен</li>
         <li class="tab-link" data-tab="tab-3">Паропроницаемость</li>
-        <li class="tab-link" data-tab="tab-4">Теплоустойчивость</li>
+        <!--<li class="tab-link" data-tab="tab-4">Теплоустойчивость</li>
         <li class="tab-link" data-tab="tab-5">Воздухопроницаемость</li>
         <li class="tab-link" data-tab="tab-6">Теплобаланс</li>
-        <!--<li class="tab-link" data-tab="tab-7">Экономическая эффективность</li>
+        <li class="tab-link" data-tab="tab-7">Экономическая эффективность</li>
         <li class="tab-link" data-tab="tab-8">Экология</li>
         <li class="tab-link" data-tab="tab-1">О проекте</li>-->
     </ul>
@@ -372,24 +372,26 @@
             </tr>
             <tr>
                 <td class="dataName"> Rп = </td>
-                <td> </td>
+                <td> <div id="vapor_r_p"></td>
             </tr>
             <tr>
                 <td class="dataName">  Rп.н. Tmp = </td>
-                <td> </td>
+                <td><div id="vapor_r_pn_tmp"> </td>
             </tr>
             <tr>
                 <td class="dataName"> Rп.н. = </td>
-                <td> </td>
+                <td> <div id="vapor_r_pn"></td>
             </tr>
             <tr>
                 <td class="dataName"> P = </td>
-                <td> </td>
+                <td> <div id="vapor_p"></td>
             </tr>
-            <tr>
+           <!--
+           TODO: Подготовить таблицы из теплообмена и закончить с Rп1тр и Rп2тр
+           <tr>
                 <td class="dataName">  Rп1тр= </td>
                 <td> </td>
-            </tr>
+            </tr> -->
 
         </table>
     </div>
